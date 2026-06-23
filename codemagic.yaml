@@ -8,18 +8,15 @@ workflows:
       - name: Get dependencies
         script: flutter packages pub get
 
-      - name: Set up CocoaPods
+      - name: Pod install
         script: |
           cd ios
           pod repo update
-          pod install --deployment
+          pod install
 
       - name: Build iOS
         script: |
-          flutter build ios \
-            --release \
-            --no-codesign \
-            --scheme Runner        # ← 明示的に指定
+          flutter build ios --release --no-codesign
 
     artifacts:
-      - build/ios/iphoneos/Runner.app   # ← .ipaではなく.appで一旦確認
+      - build/ios/iphoneos/Runner.app
