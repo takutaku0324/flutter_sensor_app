@@ -7,6 +7,13 @@ workflows:
     scripts:
       - name: Get dependencies
         script: flutter packages pub get
+
+      - name: Set up Xcode project  # ← 追加
+        script: |
+          cd ios
+          pod repo update
+          pod install
+
       - name: Build iOS
         script: |
           flutter build ios --release --no-codesign
