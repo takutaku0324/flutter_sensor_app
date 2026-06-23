@@ -1,0 +1,18 @@
+workflows:
+  flutter-ios:
+    name: Flutter iOS
+    environment:
+      flutter: stable
+      xcode: latest
+    scripts:
+      - name: Get dependencies
+        script: flutter packages pub get
+      - name: Build iOS
+        script: |
+          flutter build ios --release --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload/
+          zip -r app.ipa Payload/
+    artifacts:
+      - build/ios/iphoneos/app.ipa
