@@ -8,14 +8,8 @@ workflows:
       - name: Get dependencies
         script: flutter packages pub get
 
-      - name: Build iOS (generates Podfile)
+      - name: Flutter build iOS
         script: flutter build ios --release --no-codesign
-
-      - name: Pod install
-        script: |
-          cd ios
-          pod repo update
-          pod install
 
     artifacts:
       - build/ios/iphoneos/Runner.app
