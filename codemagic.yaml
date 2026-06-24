@@ -4,12 +4,13 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
+
     scripts:
       - name: Get dependencies
-        script: flutter packages pub get
+        script: flutter pub get
 
-      - name: Flutter build iOS
-        script: flutter build ios --release --no-codesign
+      - name: Build IPA
+        script: flutter build ipa --release
 
     artifacts:
-      - build/ios/iphoneos/Runner.app
+      - build/ios/ipa/*.ipa
