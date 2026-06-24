@@ -9,8 +9,13 @@ workflows:
       - name: Get dependencies
         script: flutter pub get
 
-      - name: Build IPA
-        script: flutter build ipa --release
+      - name: Build unsigned IPA
+        script: |
+          flutter build ios --release --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload/
+          zip -r app.ipa Payload/
 
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/iphoneos/app.ipa
