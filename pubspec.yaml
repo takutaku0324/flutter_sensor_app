@@ -59,7 +59,8 @@ dev_dependencies:
 flutter:
   assets:
       - assets/foot.svg
-      - assets/hum_firefighter.png
+      - assets/icon.png
+      - assets/alarm.wav
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -99,4 +100,4 @@ flutter:
 
 flutter_launcher_icons:
   ios: true
-  image_path: "assets/hum_firefighter.png"
+  image_path: "assets/icon.png"

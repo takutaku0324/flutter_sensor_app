@@ -420,27 +420,7 @@ class FootHeatmapView extends StatelessWidget {
         ),
         // 凡例
         const SizedBox(height: 4),
-        if (connected)
-          Wrap(
-            spacing: 6,
-            children: List.generate(points.length, (i) {
-              final p = points[i];
-              final v = i < values.length ? values[i] : 0.0;
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(width: 8, height: 8,
-                      decoration: BoxDecoration(
-                          color: p.color, shape: BoxShape.circle)),
-                  const SizedBox(width: 2),
-                  Text('${(v * 100).toStringAsFixed(0)}%',
-                      style: TextStyle(color: p.color,
-                          fontSize: 9, fontWeight: FontWeight.bold,
-                          fontFeatures: const [FontFeature.tabularFigures()])),
-                ],
-              );
-            }),
-          ),
+        
       ],
     );
   }
@@ -543,79 +523,23 @@ class _FootOutlinePainter extends CustomPainter {
 // AlarmSoundController
 // ================================================================
 class AlarmSoundController {
-  static const int _sampleRate = 44100;
-  static const double _freqStart = 400.0;
-  static const double _freqEnd = 1200.0;
-  static const int _sweepMs = 300;
-  static const int _silenceMs = 100;
-  static const double _amplitude = 0.7;
-
-  AudioPlayer? _player;
-  Uint8List? _wavBytes;
+   AudioPlayer? _player;
   bool _isPlaying = false;
-  bool _initialized = false;
-
-  Uint8List _buildWavHeader(int dataSize) {
-    final byteRate = _sampleRate * 1 * 16 ~/ 8;
-    final blockAlign = 1 * 16 ~/ 8;
-    final buf = ByteData(44);
-    buf.setUint8(0,  0x52); buf.setUint8(1,  0x49);
-    buf.setUint8(2,  0x46); buf.setUint8(3,  0x46);
-    buf.setUint32(4, 36 + dataSize, Endian.little);
-    buf.setUint8(8,  0x57); buf.setUint8(9,  0x41);
-    buf.setUint8(10, 0x56); buf.setUint8(11, 0x45);
-    buf.setUint8(12, 0x66); buf.setUint8(13, 0x6D);
-    buf.setUint8(14, 0x74); buf.setUint8(15, 0x20);
-    buf.setUint32(16, 16, Endian.little);
-    buf.setUint16(20, 1, Endian.little);
-    buf.setUint16(22, 1, Endian.little);
-    buf.setUint32(24, _sampleRate, Endian.little);
-    buf.setUint32(28, byteRate, Endian.little);
-    buf.setUint16(32, blockAlign, Endian.little);
-    buf.setUint16(34, 16, Endian.little);
-    buf.setUint8(36, 0x64); buf.setUint8(37, 0x61);
-    buf.setUint8(38, 0x74); buf.setUint8(39, 0x61);
-    buf.setUint32(40, dataSize, Endian.little);
-    return buf.buffer.asUint8List();
-  }
-
-  Uint8List _buildSweepSilencePcm() {
-    final sweepSamples = (_sampleRate * _sweepMs / 1000).round();
-    final silenceSamples = (_sampleRate * _silenceMs / 1000).round();
-    final totalSamples = sweepSamples + silenceSamples;
-    final pcm = ByteData(totalSamples * 2);
-    final sweepDuration = _sweepMs / 1000.0;
-    for (int i = 0; i < sweepSamples; i++) {
-      final t = i / _sampleRate;
-      final phase = 2 * pi * (_freqStart * t +
-          (_freqEnd - _freqStart) / (2 * sweepDuration) * t * t);
-      final sample = (sin(phase) * _amplitude * 32767).round().clamp(-32768, 32767);
-      pcm.setInt16(i * 2, sample, Endian.little);
-    }
-    return pcm.buffer.asUint8List();
-  }
 
   Future<void> init() async {
     try {
       _player = AudioPlayer();
       await _player!.setReleaseMode(ReleaseMode.loop);
-      final pcmData = _buildSweepSilencePcm();
-      final header = _buildWavHeader(pcmData.length);
-      final wav = Uint8List(header.length + pcmData.length);
-      wav.setRange(0, header.length, header);
-      wav.setRange(header.length, wav.length, pcmData);
-      _wavBytes = wav;
-      _initialized = true;
     } catch (e) {
       debugPrint('AlarmSoundController init error: $e');
     }
   }
 
   Future<void> startAlarm() async {
-    if (_isPlaying || !_initialized || _wavBytes == null) return;
+    if (_isPlaying) return;
     _isPlaying = true;
     try {
-      await _player!.play(BytesSource(_wavBytes!));
+      await _player!.play(AssetSource('alarm.wav'));
     } catch (e) {
       debugPrint('AlarmSoundController startAlarm error: $e');
       _isPlaying = false;
@@ -636,7 +560,6 @@ class AlarmSoundController {
     await stopAlarm();
     await _player?.dispose();
     _player = null;
-    _wavBytes = null;
   }
 }
 
@@ -825,13 +748,13 @@ class AnomalyHistoryWidget extends StatelessWidget {
                       style: const TextStyle(fontSize: 10, height: 1.0,fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
                 GestureDetector(onTap: () => Navigator.of(ctx).pop(),
-                    child: const Icon(Icons.close, size: 10, color: Colors.white38)),
+                    child: const Icon(Icons.close, size: 10, color: Colors.white)),
               ]),
               const SizedBox(height: 16),
               if (totalMs > 0) ...[
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(_fmt(rangeStart), style: const TextStyle(fontSize: 9, color: Colors.white38)),
-                  Text(_fmt(now), style: const TextStyle(fontSize: 9, color: Colors.white38)),
+                  Text(_fmt(rangeStart), style: const TextStyle(fontSize: 9, color: Colors.white)),
+                  Text(_fmt(now), style: const TextStyle(fontSize: 9, color: Colors.white)),
                 ]),
                 const SizedBox(height: 4),
                 ClipRRect(
@@ -924,9 +847,9 @@ class AnomalyHistoryWidget extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 12,
                     height: 1.0,
-                    color: (count > 0 ? const Color(0xFFFF4444) : Colors.white38).withOpacity(0.7),
+                    color: (count > 0 ? const Color(0xFFFF4444) : Colors.white),
                     fontWeight: FontWeight.w600, letterSpacing: 0.8)),
             const SizedBox(height: 4),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -988,7 +911,7 @@ class MiniStatCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 10, color: Colors.white38,
+                  style: const TextStyle(fontSize: 10, color: Colors.white,
                       fontWeight: FontWeight.w600, letterSpacing: 0.4)),
               const SizedBox(height: 4),
               Text(value,
@@ -1648,8 +1571,8 @@ class _MonitorPageState extends State<MonitorPage> {
     _lastSeq1 = frame.seq1;
 
     final rawArrays = <List<int>?>[
-      frame.conn0 ? frame.rR : null, frame.conn0 ? frame.rL : null, frame.conn0 ? frame.rB : null,
-      frame.conn1 ? frame.lR : null, frame.conn1 ? frame.lL : null, frame.conn1 ? frame.lB : null,
+      frame.conn0 ? frame.lR : null, frame.conn0 ? frame.lL : null, frame.conn0 ? frame.lB : null,
+      frame.conn1 ? frame.rR : null, frame.conn1 ? frame.rL : null, frame.conn1 ? frame.rB : null,
     ];
 
     final sampleCount = rawArrays.whereType<List<int>>().fold(0, (mx, a) => max(mx, a.length));
@@ -1799,10 +1722,10 @@ class _MonitorPageState extends State<MonitorPage> {
         child: Column(children: [
           // デバイス接続状態チップ (ちらつき防止: _disp* 変数を使用)
           Row(children: [
-            _deviceChip('Dev1 (右足)', frame?.conn0 ?? false,
+            _deviceChip('Dev1 (左足)', frame?.conn0 ?? false,
                 _dispSeq0, _dispNf0, _dispBo0),
             const SizedBox(width: 8),
-            _deviceChip('Dev2 (左足)', frame?.conn1 ?? false,
+            _deviceChip('Dev2 (右足)', frame?.conn1 ?? false,
                 _dispSeq1, _dispNf1, _dispBo1),
           ]),
           const SizedBox(height: 12),
@@ -1822,11 +1745,11 @@ class _MonitorPageState extends State<MonitorPage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(child: NfBoStatusWidget(
-                              label: 'Dev1 右足',
+                              label: 'Dev1 左足',
                               nf: _dispNf0, bo: _dispBo0)),
                           const SizedBox(width: 6),
                           Expanded(child: NfBoStatusWidget(
-                              label: 'Dev2 左足',
+                              label: 'Dev2 右足',
                               nf: _dispNf1, bo: _dispBo1)),
                           const SizedBox(width: 6),
                           Expanded(child: AnomalyHistoryWidget(
@@ -1872,14 +1795,14 @@ class _MonitorPageState extends State<MonitorPage> {
                             const SizedBox(width: 6),
                             MiniStatCard(
                               icon: Icons.speed,
-                              label: 'ケイデンス 右',
+                              label: 'ケイデンス 左',
                               value: _cadenceR != null ? '$_cadenceR spm' : '-',
                               color: const Color(0xFFA88BFA),
                             ),
                             const SizedBox(width: 6),
                             MiniStatCard(
                               icon: Icons.speed,
-                              label: 'ケイデンス 左',
+                              label: 'ケイデンス 右',
                               value: _cadenceL != null ? '$_cadenceL spm' : '-',
                               color: const Color(0xFFA88BFA),
                             ),
@@ -1906,8 +1829,8 @@ class _MonitorPageState extends State<MonitorPage> {
                                   children: [
                                     const Text('圧力ヒートマップ',
                                         style: TextStyle(
-                                            color: Colors.white38,
-                                            fontSize: 10,
+                                            color: Colors.white,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             letterSpacing: 0.6)),
                                     const SizedBox(height: 6),
@@ -1917,12 +1840,12 @@ class _MonitorPageState extends State<MonitorPage> {
                                           Expanded(
                                             child: FootHeatmapView(
                                               values: [
-                                                _lastValue[0],
-                                                _lastValue[1],
-                                                _lastValue[2],
+                                                _lastValue[3],
+                                                _lastValue[4],
+                                                _lastValue[5],
                                               ],
                                               points: _heatmapPoints.sublist(0, 3),
-                                              label: 'Dev1 右足',
+                                              label: 'Dev1 左足',
                                               connected: frame?.conn0 ?? false,
                                             ),
                                           ),
@@ -1930,12 +1853,12 @@ class _MonitorPageState extends State<MonitorPage> {
                                           Expanded(
                                             child: FootHeatmapView(
                                               values: [
-                                                _lastValue[3],
-                                                _lastValue[4],
-                                                _lastValue[5],
+                                                _lastValue[0],
+                                                _lastValue[1],
+                                                _lastValue[2],
                                               ],
                                               points: _heatmapPoints.sublist(3, 6),
-                                              label: 'Dev2 左足',
+                                              label: 'Dev2 右足',
                                               connected: frame?.conn1 ?? false,
                                               mirror: true,
                                             ),
@@ -2002,12 +1925,14 @@ class _MonitorPageState extends State<MonitorPage> {
             ),
           ),
           const SizedBox(height: 12),
+          const Text('anomaly score', style: TextStyle(color: Color.fromARGB(140, 255, 255, 255), fontSize: 13)),
+          const SizedBox(height: 2),
           Text(ready ? score.toStringAsFixed(4) : '-',
               style: const TextStyle(color: Colors.white70, fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFeatures: [FontFeature.tabularFigures()])),
-          const SizedBox(height: 4),
-          const Text('anomaly score', style: TextStyle(color: Colors.white24, fontSize: 11)),
+          
+
           const SizedBox(height: 12),
         ],
       ),
