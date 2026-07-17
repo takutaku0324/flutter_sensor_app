@@ -1370,6 +1370,15 @@ class _MonitorPageState extends State<MonitorPage> {
   bool _connected = false;
   String _status = '未接続';
   SensorFrame? _latest;
+  StreamSubscription? _wsSub;
+  Timer? _reconnectTimer;
+  bool _manualDisconnect = false;
+  int _reconnectAttempts = 0;
+  static const int _maxReconnectDelayMs = 10000;
+
+  Timer? _uiThrottleTimer;
+  bool _pendingUiUpdate = false;
+  
 
   // ── ちらつき防止: 表示用の前回値を保持 ────────────────────────
   int? _dispSeq0;
@@ -1487,6 +1496,12 @@ class _MonitorPageState extends State<MonitorPage> {
   void initState() {
     super.initState();
     _alarm.init();
+    _uiThrottleTimer = Timer.periodic(const Duration(milliseconds: 25), (_) {
+      if (_pendingUiUpdate && mounted) {
+        _pendingUiUpdate = false;
+        setState(() {});
+      }
+    });
   }
 
   double _calcStd(List<double> data) {
@@ -1518,6 +1533,7 @@ class _MonitorPageState extends State<MonitorPage> {
         if (_currentAnomalySession != null &&
             !_anomalySessions.contains(_currentAnomalySession)) {
           _anomalySessions.add(_currentAnomalySession!);
+          if (_anomalySessions.length > 200) _anomalySessions.removeAt(0);
         }
         _currentAnomalySession = AnomalySession(start: now, end: now);
       }
@@ -1530,6 +1546,7 @@ class _MonitorPageState extends State<MonitorPage> {
       if (_currentAnomalySession != null) {
         if (!_anomalySessions.contains(_currentAnomalySession)) {
           _anomalySessions.add(_currentAnomalySession!);
+          if (_anomalySessions.length > 200) _anomalySessions.removeAt(0);
         }
         _currentAnomalySession = null;
       }
@@ -1541,26 +1558,56 @@ class _MonitorPageState extends State<MonitorPage> {
   }
 
   void _connect() {
+    _manualDisconnect = false;
+    _reconnectTimer?.cancel();
+
+    _wsSub?.cancel();
+    _wsSub = null;
+    _channel?.sink.close();
+    _channel = null;
+
     final url = _urlController.text.trim();
     _monitoringStart ??= DateTime.now();
     for (final b in _stdBuffer) b.clear();
+
     try {
       final channel = WebSocketChannel.connect(Uri.parse(url));
       _channel = channel;
       setState(() { _connected = true; _status = '接続中'; });
-      channel.stream.listen(
+
+      _wsSub = channel.stream.listen(
         (msg) {
           Map<String, dynamic> raw;
           try { raw = jsonDecode(msg as String) as Map<String, dynamic>; }
           catch (_) { return; }
           _pushFrame(SensorFrame.fromJson(raw));
         },
-        onError: (_) => setState(() { _status = '接続エラー'; _connected = false; }),
-        onDone: () => setState(() { _status = '切断されました'; _connected = false; }),
+        onError: (_) => _handleDisconnect('接続エラー'),
+        onDone: () => _handleDisconnect('切断されました'),
+        cancelOnError: true,
       );
     } catch (e) {
-      setState(() { _status = 'エラー: $e'; _connected = false; });
+      _handleDisconnect('エラー: $e');
     }
+  }
+
+  void _handleDisconnect(String status) {
+    if (!mounted) return;
+    setState(() { _status = status; _connected = false; });
+    _wsSub?.cancel();
+    _wsSub = null;
+    _channel = null;
+
+    if (_manualDisconnect) return;
+
+    final delayMs = min(1000 * (1 << min(_reconnectAttempts, 4)), _maxReconnectDelayMs);
+    _reconnectAttempts++;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(Duration(milliseconds: delayMs), () {
+      if (!mounted || _manualDisconnect) return;
+      setState(() => _status = '再接続中... (${_reconnectAttempts}回目)');
+      _connect();
+    });
   }
 
   void _pushFrame(SensorFrame frame) {
@@ -1578,39 +1625,43 @@ class _MonitorPageState extends State<MonitorPage> {
     final sampleCount = rawArrays.whereType<List<int>>().fold(0, (mx, a) => max(mx, a.length));
     if (sampleCount == 0) return;
 
-    setState(() {
-      _latest = frame;
+    _latest = frame;
 
-      // ── ちらつき防止: null でない値のみ表示用変数を更新 ──────
-      if (frame.seq0 != null) _dispSeq0 = frame.seq0;
-      if (frame.seq1 != null) _dispSeq1 = frame.seq1;
-      if (frame.nf0 != null)  _dispNf0  = frame.nf0;
-      if (frame.bo0 != null)  _dispBo0  = frame.bo0;
-      if (frame.nf1 != null)  _dispNf1  = frame.nf1;
-      if (frame.bo1 != null)  _dispBo1  = frame.bo1;
+    if (frame.seq0 != null) _dispSeq0 = frame.seq0;
+    if (frame.seq1 != null) _dispSeq1 = frame.seq1;
+    if (frame.nf0 != null)  _dispNf0  = frame.nf0;
+    if (frame.bo0 != null)  _dispBo0  = frame.bo0;
+    if (frame.nf1 != null)  _dispNf1  = frame.nf1;
+    if (frame.bo1 != null)  _dispBo1  = frame.bo1;
 
-      if (frame.inferReady) _updateAnomalyHistory(frame.anomaly);
-      for (int s = 0; s < sampleCount; s++) {
-        for (int ch = 0; ch < 6; ch++) {
-          final arr = rawArrays[ch];
-          if (arr == null || s >= arr.length) continue;
-          _lastValue[ch] = arr[s] / _adcFullScale;
-          _series[ch].add(FlSpot(_tick.toDouble(), _lastValue[ch]));
-          if (_series[ch].length > maxPoints) _series[ch].removeAt(0);
-        }
-        for (int ch = 0; ch < 6; ch++) {
-          _stdBuffer[ch].add(_lastValue[ch]);
-          if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
-        }
-        _updateMotionState();
-        _updateStepCounts(s);
-        _tick++;
+    if (frame.inferReady) _updateAnomalyHistory(frame.anomaly);
+    for (int s = 0; s < sampleCount; s++) {
+      for (int ch = 0; ch < 6; ch++) {
+        final arr = rawArrays[ch];
+        if (arr == null || s >= arr.length) continue;
+        _lastValue[ch] = arr[s] / _adcFullScale;
+        _series[ch].add(FlSpot(_tick.toDouble(), _lastValue[ch]));
+        if (_series[ch].length > maxPoints) _series[ch].removeAt(0);
       }
-    });
+      for (int ch = 0; ch < 6; ch++) {
+        _stdBuffer[ch].add(_lastValue[ch]);
+        if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
+      }
+      _updateMotionState();
+      _updateStepCounts(s);
+      _tick++;
+    }
+    _pendingUiUpdate = true;
   }
 
   void _disconnect() {
+    _manualDisconnect = true;
+    _reconnectAttempts = 0;
+    _reconnectTimer?.cancel();
+    _wsSub?.cancel();
+    _wsSub = null;
     _channel?.sink.close();
+    _channel = null;
     _alarm.stopAlarm();
     _alarmPlaying = false;
     setState(() { _connected = false; _status = '未接続'; });
@@ -1663,6 +1714,9 @@ class _MonitorPageState extends State<MonitorPage> {
 
   @override
   void dispose() {
+    _uiThrottleTimer?.cancel();
+    _reconnectTimer?.cancel();
+    _wsSub?.cancel();
     _channel?.sink.close();
     _urlController.dispose();
     _alarm.dispose();
@@ -1840,9 +1894,9 @@ class _MonitorPageState extends State<MonitorPage> {
                                           Expanded(
                                             child: FootHeatmapView(
                                               values: [
-                                                _lastValue[3],
-                                                _lastValue[4],
-                                                _lastValue[5],
+                                                _lastValue[0],
+                                                _lastValue[1],
+                                                _lastValue[2],
                                               ],
                                               points: _heatmapPoints.sublist(0, 3),
                                               label: 'Dev1 左足',
@@ -1853,9 +1907,9 @@ class _MonitorPageState extends State<MonitorPage> {
                                           Expanded(
                                             child: FootHeatmapView(
                                               values: [
-                                                _lastValue[0],
-                                                _lastValue[1],
-                                                _lastValue[2],
+                                                _lastValue[3],
+                                                _lastValue[4],
+                                                _lastValue[5],
                                               ],
                                               points: _heatmapPoints.sublist(3, 6),
                                               label: 'Dev2 右足',
