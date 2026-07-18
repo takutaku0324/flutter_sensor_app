@@ -17,6 +17,8 @@ import 'package:audioplayers/audioplayers.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:flutter/gestures.dart';
+
 import 'dart:ui';
 
 void main() {
@@ -31,6 +33,13 @@ class EspMonitorApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Firefighter Device Monitor',
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {
+          PointerDeviceKind.touch,
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.trackpad,
+        },
+      ),
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF0D1117),
         colorScheme: const ColorScheme.dark(
@@ -38,8 +47,8 @@ class EspMonitorApp extends StatelessWidget {
           surface: Color(0xFF161B22),
         ),
         textTheme: Typography.material2021().white.apply(
-          fontFamily: 'sans-serif',
-        ),
+              fontFamily: 'sans-serif',
+            ),
       ),
       home: const MonitorPage(),
     );
@@ -59,7 +68,8 @@ class IconViewPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF161B22),
         title: const Text('アイコン表示',
-            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+            style:
+                TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
       ),
       body: Center(
         child: Column(
@@ -88,7 +98,8 @@ class IconViewPage extends StatelessWidget {
                         SizedBox(height: 12),
                         Text('assets/icon.png\nが見つかりません',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white38, fontSize: 12)),
+                            style:
+                                TextStyle(color: Colors.white38, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -125,6 +136,13 @@ class SensorFrame {
   final List<int> lR, lL, lB;
   final int? seq0, seq1;
   final int? nf0, bo0, nf1, bo1;
+  // ── Dev3 / Dev4 (グラフ・ヒートマップ表示のみ、推論には使用しない) ──
+  final bool conn2;
+  final bool conn3;
+  final List<int> d2R, d2L, d2B;
+  final List<int> d3R, d3L, d3B;
+  final int? seq2, seq3;
+  final int? nf2, bo2, nf3, bo3;
   final bool inferReady;
   final double score;
   final bool anomaly;
@@ -133,10 +151,32 @@ class SensorFrame {
   SensorFrame({
     required this.conn0,
     required this.conn1,
-    required this.rR, required this.rL, required this.rB,
-    required this.lR, required this.lL, required this.lB,
-    this.seq0, this.seq1,
-    this.nf0, this.bo0, this.nf1, this.bo1,
+    required this.rR,
+    required this.rL,
+    required this.rB,
+    required this.lR,
+    required this.lL,
+    required this.lB,
+    this.seq0,
+    this.seq1,
+    this.nf0,
+    this.bo0,
+    this.nf1,
+    this.bo1,
+    this.conn2 = false,
+    this.conn3 = false,
+    this.d2R = const [],
+    this.d2L = const [],
+    this.d2B = const [],
+    this.d3R = const [],
+    this.d3L = const [],
+    this.d3B = const [],
+    this.seq2,
+    this.seq3,
+    this.nf2,
+    this.bo2,
+    this.nf3,
+    this.bo3,
     required this.inferReady,
     required this.score,
     required this.anomaly,
@@ -154,19 +194,38 @@ class SensorFrame {
   factory SensorFrame.fromJson(Map<String, dynamic> j) {
     final d0 = (j['d0'] as Map<String, dynamic>?) ?? const {};
     final d1 = (j['d1'] as Map<String, dynamic>?) ?? const {};
+    final d2 = (j['d2'] as Map<String, dynamic>?) ?? const {};
+    final d3 = (j['d3'] as Map<String, dynamic>?) ?? const {};
     final infer = (j['infer'] as Map<String, dynamic>?) ?? const {};
     return SensorFrame(
       conn0: d0['conn'] == true,
       conn1: d1['conn'] == true,
-      rR: _parseIntArray(d0['R_R']),
-      rL: _parseIntArray(d0['R_L']),
-      rB: _parseIntArray(d0['R_B']),
-      lR: _parseIntArray(d1['L_R']),
-      lL: _parseIntArray(d1['L_L']),
-      lB: _parseIntArray(d1['L_B']),
-      seq0: _i(d0['seq']), seq1: _i(d1['seq']),
-      nf0: _i(d0['nf']),  bo0: _i(d0['bo']),
-      nf1: _i(d1['nf']),  bo1: _i(d1['bo']),
+      rR: _parseIntArray(d0['R']),
+      rL: _parseIntArray(d0['L']),
+      rB: _parseIntArray(d0['B']),
+      lR: _parseIntArray(d1['R']),
+      lL: _parseIntArray(d1['L']),
+      lB: _parseIntArray(d1['B']),
+      seq0: _i(d0['seq']),
+      seq1: _i(d1['seq']),
+      nf0: _i(d0['nf']),
+      bo0: _i(d0['bo']),
+      nf1: _i(d1['nf']),
+      bo1: _i(d1['bo']),
+      conn2: d2['conn'] == true,
+      conn3: d3['conn'] == true,
+      d2R: _parseIntArray(d2['R']),
+      d2L: _parseIntArray(d2['L']),
+      d2B: _parseIntArray(d2['B']),
+      d3R: _parseIntArray(d3['R']),
+      d3L: _parseIntArray(d3['L']),
+      d3B: _parseIntArray(d3['B']),
+      seq2: _i(d2['seq']),
+      seq3: _i(d3['seq']),
+      nf2: _i(d2['nf']),
+      bo2: _i(d2['bo']),
+      nf3: _i(d3['nf']),
+      bo3: _i(d3['bo']),
       inferReady: infer['ready'] == true,
       score: (infer['score'] ?? 0).toDouble(),
       anomaly: infer['anomaly'] == true,
@@ -191,7 +250,7 @@ class HeatmapPoint {
   /// 色
   final Color color;
   final double sigmaY;
-  final bool visible;  
+  final bool visible;
 
   HeatmapPoint({
     required this.x,
@@ -204,8 +263,15 @@ class HeatmapPoint {
     this.visible = false,
   });
 
-  HeatmapPoint copyWith({double? x, double? y, double? sigma, double? sigmaY, double? weightMul,Color? color,
- bool? visible}) =>
+  HeatmapPoint copyWith({
+    double? x,
+    double? y,
+    double? sigma,
+    double? sigmaY,
+    double? weightMul,
+    Color? color,
+    bool? visible,
+  }) =>
       HeatmapPoint(
         x: x ?? this.x,
         y: y ?? this.y,
@@ -222,23 +288,113 @@ class HeatmapPoint {
 /// 足画像は縦長のfoot.svgを想定。
 /// Dev1 右足: ch0(R_R)=外側前, ch1(R_L)=内側前, ch2(R_B)=踵
 /// Dev2 左足: ch3(L_R)=外側前, ch4(L_L)=内側前, ch5(L_B)=踵
-List<HeatmapPoint> defaultHeatmapPoints() => [
-  // Dev1 右足 (画像左側に表示)
-  HeatmapPoint(x: 0.65, y: 0.46, sigma: 0.27, weightMul: 1.0,
-      name: 'R_R (内前)', color: const Color(0xFFFF6B6B)),
-  HeatmapPoint(x: 0.29, y: 0.46, sigma: 0.27, weightMul: 1.0,
-      name: 'R_L (外前)', color: const Color(0xFFFFA94D)),
-  HeatmapPoint(x: 0.47, y: 0.68, sigma: 0.27, weightMul: 1.0,
-      name: 'R_B (踵)', color: const Color(0xFFFFD43B)),
-  // Dev2 左足 (画像右側に表示)
-  HeatmapPoint(x: 0.69, y: 0.46, sigma: 0.27, weightMul: 1.0,
-      name: 'L_R (外前)', color: const Color(0xFF4ECDC4)),
-  HeatmapPoint(x: 0.32, y: 0.46, sigma: 0.27, weightMul: 1.0,
-      name: 'L_L (内前)', color: const Color(0xFF45B7D1)),
-  HeatmapPoint(x: 0.51, y: 0.68, sigma: 0.27, weightMul: 1.0,
-      name: 'L_B (踵)', color: const Color(0xFFA88BFA)),
-];
+List<HeatmapPoint> defaultHeatmapPoints() {
+  const double sigmaYDev12 = 0.3;  // Dev1,2 用の縦倍率
+  const double sigmaYDev34 = 0.45;  // Dev3,4 用の縦倍率
 
+  return [
+    // Dev1 右足 (画像左側に表示)
+    HeatmapPoint(
+        x: 0.65,
+        y: 0.46,
+        sigma: 0.27,
+        sigmaY: sigmaYDev12,
+        weightMul: 1.0,
+        name: 'R_R (内前)',
+        color: const Color(0xFFFF6B6B)),
+    HeatmapPoint(
+        x: 0.29,
+        y: 0.46,
+        sigma: 0.27,
+        sigmaY: sigmaYDev12,
+        weightMul: 1.0,
+        name: 'R_L (外前)',
+        color: const Color(0xFFFFA94D)),
+    HeatmapPoint(
+        x: 0.47,
+        y: 0.68,
+        sigma: 0.27,
+        sigmaY: sigmaYDev12,
+        weightMul: 1.0,
+        name: 'R_B (踵)',
+        color: const Color(0xFFFFD43B)),
+    // Dev2 左足 (画像右側に表示)
+    HeatmapPoint(
+        x: 0.69,
+        y: 0.46,
+        sigma: 0.27,
+        sigmaY: sigmaYDev12,
+        weightMul: 1.0,
+        name: 'L_R (外前)',
+        color: const Color(0xFF4ECDC4)),
+    HeatmapPoint(
+        x: 0.32,
+        y: 0.46,
+        sigma: 0.27,
+        sigmaY: sigmaYDev12,
+        weightMul: 1.0,
+        name: 'L_L (内前)',
+        color: const Color(0xFF45B7D1)),
+    HeatmapPoint(
+        x: 0.51,
+        y: 0.68,
+        sigma: 0.27,
+        sigmaY: sigmaYDev12,
+        weightMul: 1.0,
+        name: 'L_B (踵)',
+        color: const Color(0xFFA88BFA)),
+    // Dev3 (画像左側に表示)
+    HeatmapPoint(
+        x: 0.65,
+        y: 0.41,
+        sigma: 0.27,
+        sigmaY: sigmaYDev34,
+        weightMul: 1.0,
+        name: 'D3_R',
+        color: const Color(0xFFFF6B6B)),
+    HeatmapPoint(
+        x: 0.29,
+        y: 0.41,
+        sigma: 0.27,
+        sigmaY: sigmaYDev34,
+        weightMul: 1.0,
+        name: 'D3_L',
+        color: const Color(0xFFFFA94D)),
+    HeatmapPoint(
+        x: 0.47,
+        y: 0.82,
+        sigma: 0.27,
+        sigmaY: sigmaYDev34,
+        weightMul: 1.0,
+        name: 'D3_B (踵)',
+        color: const Color(0xFFFFD43B)),
+    // Dev4 (画像右側に表示)
+    HeatmapPoint(
+        x: 0.69,
+        y: 0.41,
+        sigma: 0.27,
+        sigmaY: sigmaYDev34,
+        weightMul: 1.0,
+        name: 'D4_R',
+        color: const Color(0xFF4ECDC4)),
+    HeatmapPoint(
+        x: 0.32,
+        y: 0.41,
+        sigma: 0.27,
+        sigmaY: sigmaYDev34,
+        weightMul: 1.0,
+        name: 'D4_L',
+        color: const Color(0xFF45B7D1)),
+    HeatmapPoint(
+        x: 0.51,
+        y: 0.82,
+        sigma: 0.27,
+        sigmaY: sigmaYDev34,
+        weightMul: 1.0,
+        name: 'D4_B (踵)',
+        color: const Color(0xFFA88BFA)),
+  ];
+}
 // ================================================================
 // FootHeatmapPainter: 足の上にガウスヒートマップを描画するCustomPainter
 // ================================================================
@@ -277,10 +433,8 @@ class FootHeatmapPainter extends CustomPainter {
           final sigmaX = p.sigma.clamp(0.01, 1.0);
           final sigmaY = (p.sigma * p.sigmaY).clamp(0.01, 1.0);
           final gauss = exp(
-            -(
-              (dx * dx) / (2 * sigmaX * sigmaX) +
-              (dy * dy) / (2 * sigmaY * sigmaY)
-            ),
+            -((dx * dx) / (2 * sigmaX * sigmaX) +
+                (dy * dy) / (2 * sigmaY * sigmaY)),
           );
           intensity += v * gauss;
         }
@@ -291,7 +445,8 @@ class FootHeatmapPainter extends CustomPainter {
           ..color = _intensityColor(intensity, baseColor)
           ..style = PaintingStyle.fill;
         canvas.drawRect(
-          Rect.fromLTWH(px - step / 2, py - step / 2, step.toDouble(), step.toDouble()),
+          Rect.fromLTWH(
+              px - step / 2, py - step / 2, step.toDouble(), step.toDouble()),
           paint,
         );
       }
@@ -328,8 +483,29 @@ class FootHeatmapPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(FootHeatmapPainter old) =>
-      old.values != values || old.points != points;
+  bool shouldRepaint(FootHeatmapPainter old) {
+    // 参照が毎フレーム変わる List でも、内容が同じなら再描画をスキップする
+    if (old.baseColor != baseColor) return true;
+    if (old.values.length != values.length) return true;
+    if (old.points.length != points.length) return true;
+    for (int i = 0; i < values.length; i++) {
+      if (old.values[i] != values[i]) return true;
+    }
+    for (int i = 0; i < points.length; i++) {
+      final a = old.points[i];
+      final b = points[i];
+      if (a.x != b.x ||
+          a.y != b.y ||
+          a.sigma != b.sigma ||
+          a.sigmaY != b.sigmaY ||
+          a.weightMul != b.weightMul ||
+          a.visible != b.visible ||
+          a.color != b.color) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 // ================================================================
@@ -352,14 +528,15 @@ class FootHeatmapView extends StatelessWidget {
     this.mirror = false,
   });
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Text(label,
             style: const TextStyle(
-                color: Colors.white54, fontSize: 11, fontWeight: FontWeight.w600)),
+                color: Colors.white54,
+                fontSize: 11,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
         Expanded(
           child: ClipRRect(
@@ -399,8 +576,8 @@ class FootHeatmapView extends StatelessWidget {
                         return Positioned(
                           left: p.x * w - 6,
                           top: p.y * h - 6,
-                          child: _SensorDot(
-                              color: p.color, value: v, name: p.name),
+                          child:
+                              _SensorDot(color: p.color, value: v, name: p.name),
                         );
                       }),
                     // 未接続オーバーレイ
@@ -409,7 +586,8 @@ class FootHeatmapView extends StatelessWidget {
                         color: Colors.black54,
                         child: const Center(
                           child: Text('未接続',
-                              style: TextStyle(color: Colors.white38, fontSize: 12)),
+                              style:
+                                  TextStyle(color: Colors.white38, fontSize: 12)),
                         ),
                       ),
                   ],
@@ -420,7 +598,6 @@ class FootHeatmapView extends StatelessWidget {
         ),
         // 凡例
         const SizedBox(height: 4),
-        
       ],
     );
   }
@@ -444,7 +621,8 @@ class _SensorDot extends StatelessWidget {
   final Color color;
   final double value;
   final String name;
-  const _SensorDot({required this.color, required this.value, required this.name});
+  const _SensorDot(
+      {required this.color, required this.value, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -497,8 +675,7 @@ class _FootOutlinePainter extends CustomPainter {
       final tx = w * toePositions[i];
       final ty = h * 0.10;
       canvas.drawOval(
-          Rect.fromCenter(center: Offset(tx, ty),
-              width: w * 0.09, height: h * 0.10),
+          Rect.fromCenter(center: Offset(tx, ty), width: w * 0.09, height: h * 0.10),
           toePaint);
     }
 
@@ -523,7 +700,7 @@ class _FootOutlinePainter extends CustomPainter {
 // AlarmSoundController
 // ================================================================
 class AlarmSoundController {
-   AudioPlayer? _player;
+  AudioPlayer? _player;
   bool _isPlaying = false;
 
   Future<void> init() async {
@@ -532,14 +709,20 @@ class AlarmSoundController {
       await _player!.setReleaseMode(ReleaseMode.loop);
     } catch (e) {
       debugPrint('AlarmSoundController init error: $e');
+      _player = null;
     }
   }
 
   Future<void> startAlarm() async {
     if (_isPlaying) return;
+    final player = _player;
+    if (player == null) {
+      debugPrint('AlarmSoundController startAlarm skipped: player not ready');
+      return;
+    }
     _isPlaying = true;
     try {
-      await _player!.play(AssetSource('alarm.wav'));
+      await player.play(AssetSource('alarm.wav'));
     } catch (e) {
       debugPrint('AlarmSoundController startAlarm error: $e');
       _isPlaying = false;
@@ -570,7 +753,8 @@ class NfBoStatusWidget extends StatefulWidget {
   final String label;
   final int? nf;
   final int? bo;
-  const NfBoStatusWidget({super.key, required this.label, required this.nf, required this.bo});
+  const NfBoStatusWidget(
+      {super.key, required this.label, required this.nf, required this.bo});
 
   @override
   State<NfBoStatusWidget> createState() => _NfBoStatusWidgetState();
@@ -702,7 +886,7 @@ class _NfBoStatusWidgetState extends State<NfBoStatusWidget> {
       ),
     );
   }
-  }
+}
 
 // ================================================================
 // AnomalyHistoryWidget
@@ -710,19 +894,21 @@ class _NfBoStatusWidgetState extends State<NfBoStatusWidget> {
 class AnomalyHistoryWidget extends StatelessWidget {
   final List<AnomalySession> sessions;
   final DateTime? monitoringStart;
-  const AnomalyHistoryWidget({super.key, required this.sessions, required this.monitoringStart});
+  const AnomalyHistoryWidget(
+      {super.key, required this.sessions, required this.monitoringStart});
 
   String _fmt(DateTime dt) =>
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
 
-  String _dur(Duration d) => d.inSeconds < 60
-      ? '${d.inSeconds}秒'
-      : '${d.inMinutes}分${d.inSeconds % 60}秒';
+  String _dur(Duration d) =>
+      d.inSeconds < 60 ? '${d.inSeconds}秒' : '${d.inMinutes}分${d.inSeconds % 60}秒';
 
   void _showPopup(BuildContext context) {
     final now = DateTime.now();
     final rangeStart = monitoringStart ??
-        (sessions.isNotEmpty ? sessions.first.start : now.subtract(const Duration(minutes: 1)));
+        (sessions.isNotEmpty
+            ? sessions.first.start
+            : now.subtract(const Duration(minutes: 1)));
     final totalMs = now.difference(rangeStart).inMilliseconds.toDouble();
 
     showDialog(
@@ -737,24 +923,36 @@ class AnomalyHistoryWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Icon(sessions.isNotEmpty ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+                Icon(
+                    sessions.isNotEmpty
+                        ? Icons.warning_amber_rounded
+                        : Icons.check_circle_outline,
                     size: 18,
-                    color: sessions.isNotEmpty ? const Color(0xFFFF4444) : const Color(0xFF00C853)),
+                    color: sessions.isNotEmpty
+                        ? const Color(0xFFFF4444)
+                        : const Color(0xFF00C853)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text('異常履歴: ${sessions.length}回',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 10, height: 1.0,fontWeight: FontWeight.bold, color: Colors.white)),
+                      style: const TextStyle(
+                          fontSize: 10,
+                          height: 1.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
                 ),
-                GestureDetector(onTap: () => Navigator.of(ctx).pop(),
+                GestureDetector(
+                    onTap: () => Navigator.of(ctx).pop(),
                     child: const Icon(Icons.close, size: 10, color: Colors.white)),
               ]),
               const SizedBox(height: 16),
               if (totalMs > 0) ...[
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(_fmt(rangeStart), style: const TextStyle(fontSize: 9, color: Colors.white)),
-                  Text(_fmt(now), style: const TextStyle(fontSize: 9, color: Colors.white)),
+                  Text(_fmt(rangeStart),
+                      style: const TextStyle(fontSize: 9, color: Colors.white)),
+                  Text(_fmt(now),
+                      style: const TextStyle(fontSize: 9, color: Colors.white)),
                 ]),
                 const SizedBox(height: 4),
                 ClipRRect(
@@ -767,9 +965,15 @@ class AnomalyHistoryWidget extends StatelessWidget {
                         Container(width: bw, height: 16, color: Colors.white.withOpacity(0.07)),
                         for (final s in sessions)
                           Positioned(
-                            left: ((s.start.difference(rangeStart).inMilliseconds / totalMs) * bw).clamp(0.0, bw),
+                            left: ((s.start.difference(rangeStart).inMilliseconds /
+                                        totalMs) *
+                                    bw)
+                                .clamp(0.0, bw),
                             child: Container(
-                              width: ((s.end.difference(s.start).inMilliseconds / totalMs) * bw).clamp(1.0, bw),
+                              width: ((s.end.difference(s.start).inMilliseconds /
+                                          totalMs) *
+                                      bw)
+                                  .clamp(1.0, bw),
                               height: 16,
                               color: const Color(0xFFFF4444).withOpacity(0.85),
                             ),
@@ -783,38 +987,54 @@ class AnomalyHistoryWidget extends StatelessWidget {
               if (sessions.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Center(child: Text('異常なし',
-                      style: TextStyle(color: Color(0xFF00C853), fontSize: 13))),
+                  child: Center(
+                      child: Text('異常なし',
+                          style: TextStyle(color: Color(0xFF00C853), fontSize: 13))),
                 )
               else
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxHeight: 260),
                   child: SingleChildScrollView(
                     child: Column(
-                      children: sessions.reversed.map((s) => Container(
-                        margin: const EdgeInsets.only(bottom: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF4444).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(7),
-                          border: Border.all(color: const Color(0xFFFF4444).withOpacity(0.25)),
-                        ),
-                        child: Row(children: [
-                          Container(width: 7, height: 7, margin: const EdgeInsets.only(right: 8),
-                              decoration: const BoxDecoration(color: Color(0xFFFF4444), shape: BoxShape.circle)),
-                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('${_fmt(s.start)}  ～  ${_fmt(s.end)}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 2),
-                            Text('継続時間: ${_dur(s.duration)}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 10, color: Colors.white38)),
-                          ])),
-                        ]),
-                      )).toList(),
+                      children: sessions.reversed
+                          .map((s) => Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 7),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF4444).withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(7),
+                                  border: Border.all(
+                                      color: const Color(0xFFFF4444).withOpacity(0.25)),
+                                ),
+                                child: Row(children: [
+                                  Container(
+                                      width: 7,
+                                      height: 7,
+                                      margin: const EdgeInsets.only(right: 8),
+                                      decoration: const BoxDecoration(
+                                          color: Color(0xFFFF4444), shape: BoxShape.circle)),
+                                  Expanded(
+                                      child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                        Text('${_fmt(s.start)}  ～  ${_fmt(s.end)}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.white70,
+                                                fontWeight: FontWeight.w600)),
+                                        const SizedBox(height: 2),
+                                        Text('継続時間: ${_dur(s.duration)}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontSize: 10, color: Colors.white38)),
+                                      ])),
+                                ]),
+                              ))
+                          .toList(),
                     ),
                   ),
                 ),
@@ -850,18 +1070,22 @@ class AnomalyHistoryWidget extends StatelessWidget {
                     fontSize: 12,
                     height: 1.0,
                     color: (count > 0 ? const Color(0xFFFF4444) : Colors.white),
-                    fontWeight: FontWeight.w600, letterSpacing: 0.8)),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8)),
             const SizedBox(height: 4),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(count > 0 ? Icons.warning_amber_rounded : Icons.check_circle_outline,
-                  size: 15, color: count > 0 ? const Color(0xFFFF4444) : const Color(0xFF00C853)),
+                  size: 15,
+                  color: count > 0 ? const Color(0xFFFF4444) : const Color(0xFF00C853)),
               const SizedBox(width: 4),
               Flexible(
                 child: Text('$count 回',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        fontSize: 15, height: 1.0, fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        height: 1.0,
+                        fontWeight: FontWeight.bold,
                         color: count > 0 ? const Color(0xFFFF4444) : const Color(0xFF00C853),
                         fontFeatures: const [FontFeature.tabularFigures()])),
               ),
@@ -911,14 +1135,20 @@ class MiniStatCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 10, color: Colors.white,
-                      fontWeight: FontWeight.w600, letterSpacing: 0.4)),
+                  style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.4)),
               const SizedBox(height: 4),
               Text(value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: color, fontWeight: FontWeight.bold,
+                  style: TextStyle(
+                      fontSize: 15,
+                      color: color,
+                      fontWeight: FontWeight.bold,
                       fontFeatures: const [FontFeature.tabularFigures()])),
             ],
           ),
@@ -975,13 +1205,15 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
     return Row(children: [
       SizedBox(
         width: 68,
-        child: Text(label,
-            style: const TextStyle(color: Colors.white54, fontSize: 11)),
+        child:
+            Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11)),
       ),
       Expanded(
         child: Slider(
           value: value.clamp(min, max),
-          min: min, max: max, divisions: divisions,
+          min: min,
+          max: max,
+          divisions: divisions,
           activeColor: color,
           inactiveColor: Colors.white10,
           onChanged: onChanged,
@@ -991,7 +1223,9 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
         width: 40,
         child: Text(value.toStringAsFixed(2),
             textAlign: TextAlign.right,
-            style: TextStyle(color: color, fontSize: 11,
+            style: TextStyle(
+                color: color,
+                fontSize: 11,
                 fontFeatures: const [FontFeature.tabularFigures()])),
       ),
     ]);
@@ -1004,12 +1238,14 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF161B22),
         title: const Text('ヒートマップ 設定',
-            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+            style:
+                TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(_points),
             child: const Text('保存',
-                style: TextStyle(color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () {
@@ -1052,7 +1288,6 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                         shape: BoxShape.circle,
                       ),
                     ),
-
                     Expanded(
                       child: Text(
                         p.name,
@@ -1063,8 +1298,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                         ),
                       ),
                     ),
-
-                   IconButton(
+                    IconButton(
                       icon: Icon(
                         p.visible ? Icons.visibility : Icons.visibility_off,
                         size: 18,
@@ -1083,9 +1317,18 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                     (v) => setState(() => _points[idx] = p.copyWith(y: v)), p.color),
                 _slider('広がり (σ)', p.sigma, 0.02, 0.5, 48,
                     (v) => setState(() => _points[idx] = p.copyWith(sigma: v)), p.color),
-                _slider('縦倍率',  p.sigmaY,  0.1, 3.0, 58,  (v) => setState(  () => _points[idx] = p.copyWith(sigmaY: v),),  p.color,),
+                _slider(
+                  '縦倍率',
+                  p.sigmaY,
+                  0.1,
+                  3.0,
+                  58,
+                  (v) => setState(() => _points[idx] = p.copyWith(sigmaY: v)),
+                  p.color,
+                ),
                 _slider('強度倍率', p.weightMul, 0.0, 2.0, 40,
-                    (v) => setState(() => _points[idx] = p.copyWith(weightMul: v)), p.color),
+                    (v) => setState(() => _points[idx] = p.copyWith(weightMul: v)),
+                    p.color),
               ],
             ),
           );
@@ -1144,33 +1387,37 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   AppSettings _buildSettings({bool? connectAction}) => AppSettings(
-    wsUrl: _urlController.text.trim(),
-    stdThreshold: _threshold,
-    stdWindowSize: _windowSize,
-    alarmEnabled: _alarmEnabled,
-    heatmapPoints: _heatmapPoints,
-    connectAction: connectAction,
-  );
+        wsUrl: _urlController.text.trim(),
+        stdThreshold: _threshold,
+        stdWindowSize: _windowSize,
+        alarmEnabled: _alarmEnabled,
+        heatmapPoints: _heatmapPoints,
+        connectAction: connectAction,
+      );
 
   void _save() => Navigator.of(context).pop(_buildSettings());
   void _connect() => Navigator.of(context).pop(_buildSettings(connectAction: true));
   void _disconnect() => Navigator.of(context).pop(_buildSettings(connectAction: false));
 
   Widget _sectionTitle(String text) => Padding(
-    padding: const EdgeInsets.fromLTRB(2, 18, 2, 8),
-    child: Text(text, style: const TextStyle(
-        color: Color(0xFF58A6FF), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
-  );
+        padding: const EdgeInsets.fromLTRB(2, 18, 2, 8),
+        child: Text(text,
+            style: const TextStyle(
+                color: Color(0xFF58A6FF),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.8)),
+      );
 
   Widget _card({required Widget child}) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: const Color(0xFF161B22),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Colors.white10),
-    ),
-    child: child,
-  );
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF161B22),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: child,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -1184,7 +1431,8 @@ class _SettingsPageState extends State<SettingsPage> {
           TextButton(
             onPressed: _save,
             child: const Text('保存',
-                style: TextStyle(color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1202,7 +1450,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   decoration: InputDecoration(
                     labelText: 'WebSocket URL',
                     labelStyle: const TextStyle(color: Colors.white38),
-                    filled: true, fillColor: const Color(0xFF0D1117),
+                    filled: true,
+                    fillColor: const Color(0xFF0D1117),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
@@ -1245,7 +1494,6 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-
           _sectionTitle('静止／運動 判定'),
           _card(
             child: Column(
@@ -1254,11 +1502,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   const Text('標準偏差しきい値', style: TextStyle(color: Colors.white70, fontSize: 13)),
                   Text(_threshold.toStringAsFixed(2),
-                      style: const TextStyle(color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
                 ]),
                 Slider(
                   value: _threshold,
-                  min: 0.01, max: 1.0, divisions: 99,
+                  min: 0.01,
+                  max: 1.0,
+                  divisions: 99,
                   activeColor: const Color(0xFF58A6FF),
                   inactiveColor: Colors.white10,
                   onChanged: (v) => setState(() => _threshold = v),
@@ -1267,13 +1518,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 const Divider(color: Colors.white10, height: 1),
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('判定ウィンドウ（サンプル数）', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const Text('判定ウィンドウ（サンプル数）',
+                      style: TextStyle(color: Colors.white70, fontSize: 13)),
                   Text('$_windowSize',
-                      style: const TextStyle(color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
                 ]),
                 Slider(
                   value: _windowSize.toDouble(),
-                  min: 20, max: 600, divisions: 58,
+                  min: 20,
+                  max: 600,
+                  divisions: 58,
                   activeColor: const Color(0xFF58A6FF),
                   inactiveColor: Colors.white10,
                   onChanged: (v) => setState(() => _windowSize = v.round()),
@@ -1285,7 +1540,6 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-
           _sectionTitle('アラーム'),
           _card(
             child: SwitchListTile(
@@ -1297,7 +1551,6 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (v) => setState(() => _alarmEnabled = v),
             ),
           ),
-
           _sectionTitle('ヒートマップ'),
           _card(
             child: ListTile(
@@ -1318,7 +1571,6 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
           ),
-
           _sectionTitle('画面'),
           _card(
             child: ListTile(
@@ -1356,8 +1608,12 @@ class _MonitorPageState extends State<MonitorPage> {
   static const String _defaultWsUrl = 'ws://192.168.4.1:81';
   static const double _adcFullScale = 8388607.0;
 
-  static const List<String> _chLabels = ['1', '2', '3', '4', '5', '6'];
+  static const List<String> _chLabels = [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+  ];
   static const List<Color> _chColors = [
+    Color(0xFFFF6B6B), Color(0xFFFFA94D), Color(0xFFFFD43B),
+    Color(0xFF4ECDC4), Color(0xFF45B7D1), Color(0xFFA88BFA),
     Color(0xFFFF6B6B), Color(0xFFFFA94D), Color(0xFFFFD43B),
     Color(0xFF4ECDC4), Color(0xFF45B7D1), Color(0xFFA88BFA),
   ];
@@ -1375,10 +1631,10 @@ class _MonitorPageState extends State<MonitorPage> {
   bool _manualDisconnect = false;
   int _reconnectAttempts = 0;
   static const int _maxReconnectDelayMs = 10000;
+  bool _dataReceivedSinceConnect = false;
 
   Timer? _uiThrottleTimer;
   bool _pendingUiUpdate = false;
-  
 
   // ── ちらつき防止: 表示用の前回値を保持 ────────────────────────
   int? _dispSeq0;
@@ -1388,12 +1644,28 @@ class _MonitorPageState extends State<MonitorPage> {
   int? _dispNf1;
   int? _dispBo1;
 
+  int? _dispSeq2;
+  int? _dispSeq3;
+  int? _dispNf2;
+  int? _dispBo2;
+  int? _dispNf3;
+  int? _dispBo3;
+
   int? _lastSeq0;
   int? _lastSeq1;
+  int? _lastSeq2;
+  int? _lastSeq3;
 
-  final List<List<FlSpot>> _series = List.generate(6, (_) => []);
-  final List<double> _lastValue = List.filled(6, 0.0);
+  // ch0-2: Dev1, ch3-5: Dev2, ch6-8: Dev3, ch9-11: Dev4
+  final List<List<FlSpot>> _series = List.generate(12, (_) => []);
+  final List<double> _lastValue = List.filled(12, 0.0);
   int _tick = 0;
+
+  // ページ切り替え (0: Dev1,2 画面 / 1: Dev3,4 画面)
+  final PageController _pageController = PageController();
+  double _dragAccum = 0;
+  bool _dragTriggered = false;
+  int _currentPage = 0;
 
   final _urlController = TextEditingController(text: _defaultWsUrl);
 
@@ -1406,89 +1678,81 @@ class _MonitorPageState extends State<MonitorPage> {
   bool _alarmPlaying = false;
   bool _alarmEnabled = true;
 
-  final List<List<double>> _stdBuffer = List.generate(6, (_) => []);
+  final List<List<double>> _stdBuffer = List.generate(12, (_) => []);
   int _stationaryMs = 0;
   int _movementMs = 0;
 
   // ヒートマップ設定
   List<HeatmapPoint> _heatmapPoints = defaultHeatmapPoints();
-
+  
   // ── 歩数・ケイデンス ─────────────────────────────────────────
+  // 立ち上がりエッジ（しきい値を下から上に超えた瞬間）を1歩として検出し、
+  // 直前の立ち上がりエッジからのサンプル間隔でケイデンスを算出する。
   static const double _stepThreshold = 0.35;
-  static const int _stepMaxWindow = 300;
   static const int _cadenceTimeoutSamples = 313;
   static const int _cadenceMaxSpm = 180;
 
   int _stepCountR = 0;
   bool _stepAboveR = false;
-  int _stepWindowCountR = 0;
+  int? _lastStepTickR;
   int? _cadenceR;
   int _cadenceBelowCountR = 0;
 
   int _stepCountL = 0;
   bool _stepAboveL = false;
-  int _stepWindowCountL = 0;
+  int? _lastStepTickL;
   int? _cadenceL;
   int _cadenceBelowCountL = 0;
 
-  (bool, int, int, int?) _detectStep(
-      double val, bool above, int windowCount, int belowCount) {
-    if (val > _stepThreshold) {
-      if (!above) {
-        return (true, 1, 0, null);
-      } else {
-        final newCount = windowCount + 1;
-        if (newCount >= _stepMaxWindow) {
-          return (false, 0, 0, null);
-        }
-        return (true, newCount, 0, null);
-      }
-    } else {
-      final newBelowCount = belowCount + 1;
-      if (above) {
-        if (windowCount >= _stepMaxWindow) {
-          return (false, 0, newBelowCount, null);
-        }
-        final cad = (60.0 / (windowCount * 0.016)).round();
-        if (cad >= _cadenceMaxSpm) {
-          return (false, 0, newBelowCount, null);
-        }
-        return (false, 0, newBelowCount, cad);
-      }
-      return (false, 0, newBelowCount, null);
-    }
-  }
-
-  void _updateStepCounts(int s) {
-    if (_series[2].isNotEmpty) {
+  void _updateStepCounts(int s, List<bool> validThisSample) {
+    if (validThisSample[2]) {
       final valR = _lastValue[2];
-      final (newAboveR, newCountR, newBelowR, cadR) =
-          _detectStep(valR, _stepAboveR, _stepWindowCountR, _cadenceBelowCountR);
-      _stepAboveR = newAboveR;
-      _stepWindowCountR = newCountR;
-      _cadenceBelowCountR = newBelowR;
-      if (cadR != null) {
+      final isAboveR = valR > _stepThreshold;
+      if (isAboveR && !_stepAboveR) {
+        // 立ち上がりエッジ = 1歩
         _stepCountR++;
-        _cadenceR = cadR;
+        if (_lastStepTickR != null) {
+          final interval = _tick - _lastStepTickR!;
+          if (interval > 0) {
+            final cad = (60.0 / (interval * 0.016)).round();
+            if (cad < _cadenceMaxSpm) {
+              _cadenceR = cad;
+            }
+          }
+        }
+        _lastStepTickR = _tick;
+        _cadenceBelowCountR = 0;
+      } else if (!isAboveR) {
+        _cadenceBelowCountR++;
+        if (_cadenceBelowCountR >= _cadenceTimeoutSamples) {
+          _cadenceR = null;
+        }
       }
-      if (_cadenceBelowCountR >= _cadenceTimeoutSamples) {
-        _cadenceR = null;
-      }
+      _stepAboveR = isAboveR;
     }
-    if (_series[5].isNotEmpty) {
+    if (validThisSample[5]) {
       final valL = _lastValue[5];
-      final (newAboveL, newCountL, newBelowL, cadL) =
-          _detectStep(valL, _stepAboveL, _stepWindowCountL, _cadenceBelowCountL);
-      _stepAboveL = newAboveL;
-      _stepWindowCountL = newCountL;
-      _cadenceBelowCountL = newBelowL;
-      if (cadL != null) {
+      final isAboveL = valL > _stepThreshold;
+      if (isAboveL && !_stepAboveL) {
         _stepCountL++;
-        _cadenceL = cadL;
+        if (_lastStepTickL != null) {
+          final interval = _tick - _lastStepTickL!;
+          if (interval > 0) {
+            final cad = (60.0 / (interval * 0.016)).round();
+            if (cad < _cadenceMaxSpm) {
+              _cadenceL = cad;
+            }
+          }
+        }
+        _lastStepTickL = _tick;
+        _cadenceBelowCountL = 0;
+      } else if (!isAboveL) {
+        _cadenceBelowCountL++;
+        if (_cadenceBelowCountL >= _cadenceTimeoutSamples) {
+          _cadenceL = null;
+        }
       }
-      if (_cadenceBelowCountL >= _cadenceTimeoutSamples) {
-        _cadenceL = null;
-      }
+      _stepAboveL = isAboveL;
     }
   }
 
@@ -1508,13 +1772,16 @@ class _MonitorPageState extends State<MonitorPage> {
     final n = data.length;
     if (n == 0) return 0.0;
     final mean = data.reduce((a, b) => a + b) / n;
-    final variance = data.fold(0.0, (sum, v) => sum + (v - mean) * (v - mean)) / n;
+    final variance =
+        data.fold(0.0, (sum, v) => sum + (v - mean) * (v - mean)) / n;
     return sqrt(variance);
   }
 
   void _updateMotionState() {
-    if (_stdBuffer.any((b) => b.length < _stdWindowSize)) return;
-    final allStationary = _stdBuffer.every((b) => _calcStd(b) <= _stdThreshold);
+    // Dev1,2 (ch0-5) のみを対象とする（元の挙動を維持）
+    final targetBuffers = _stdBuffer.sublist(0, 6);
+    if (targetBuffers.any((b) => b.length < _stdWindowSize)) return;
+    final allStationary = targetBuffers.every((b) => _calcStd(b) <= _stdThreshold);
     if (allStationary) {
       _stationaryMs += _sampleIntervalMs;
     } else {
@@ -1570,16 +1837,44 @@ class _MonitorPageState extends State<MonitorPage> {
     _monitoringStart ??= DateTime.now();
     for (final b in _stdBuffer) b.clear();
 
+    // 切断されていたチャンネルの値が固まって std バッファ等を汚染しないよう、
+    // 再接続時に前回値と歩数検出の状態をリセットする。
+    for (int ch = 0; ch < 12; ch++) {
+      _lastValue[ch] = 0.0;
+    }
+    _stepAboveR = false;
+    _stepAboveL = false;
+    _lastStepTickR = null;
+    _lastStepTickL = null;
+
+    _dataReceivedSinceConnect = false;
+
     try {
       final channel = WebSocketChannel.connect(Uri.parse(url));
       _channel = channel;
-      setState(() { _connected = true; _status = '接続中'; });
+      setState(() {
+        _connected = true;
+        _status = '接続試行中...';
+      });
 
       _wsSub = channel.stream.listen(
         (msg) {
+          if (!_dataReceivedSinceConnect) {
+            _dataReceivedSinceConnect = true;
+            // 実際にデータを受信できた時点で再接続バックオフをリセットする
+            _reconnectAttempts = 0;
+            if (mounted) {
+              setState(() => _status = '接続中');
+            } else {
+              _status = '接続中';
+            }
+          }
           Map<String, dynamic> raw;
-          try { raw = jsonDecode(msg as String) as Map<String, dynamic>; }
-          catch (_) { return; }
+          try {
+            raw = jsonDecode(msg as String) as Map<String, dynamic>;
+          } catch (_) {
+            return;
+          }
           _pushFrame(SensorFrame.fromJson(raw));
         },
         onError: (_) => _handleDisconnect('接続エラー'),
@@ -1593,7 +1888,10 @@ class _MonitorPageState extends State<MonitorPage> {
 
   void _handleDisconnect(String status) {
     if (!mounted) return;
-    setState(() { _status = status; _connected = false; });
+    setState(() {
+      _status = status;
+      _connected = false;
+    });
     _wsSub?.cancel();
     _wsSub = null;
     _channel = null;
@@ -1613,13 +1911,20 @@ class _MonitorPageState extends State<MonitorPage> {
   void _pushFrame(SensorFrame frame) {
     final seq0Changed = frame.seq0 != null && frame.seq0 != _lastSeq0;
     final seq1Changed = frame.seq1 != null && frame.seq1 != _lastSeq1;
-    if (!seq0Changed && !seq1Changed) return;
+    final seq2Changed = frame.seq2 != null && frame.seq2 != _lastSeq2;
+    final seq3Changed = frame.seq3 != null && frame.seq3 != _lastSeq3;
+    if (!seq0Changed && !seq1Changed && !seq2Changed && !seq3Changed) return;
     _lastSeq0 = frame.seq0;
     _lastSeq1 = frame.seq1;
+    _lastSeq2 = frame.seq2;
+    _lastSeq3 = frame.seq3;
 
     final rawArrays = <List<int>?>[
-      frame.conn0 ? frame.lR : null, frame.conn0 ? frame.lL : null, frame.conn0 ? frame.lB : null,
-      frame.conn1 ? frame.rR : null, frame.conn1 ? frame.rL : null, frame.conn1 ? frame.rB : null,
+      // conn0(=d0)には d0由来の rR/rL/rB を、conn1(=d1)には d1由来の lR/lL/lB を対応させる
+      frame.conn0 ? frame.rR : null, frame.conn0 ? frame.rL : null, frame.conn0 ? frame.rB : null,
+      frame.conn1 ? frame.lR : null, frame.conn1 ? frame.lL : null, frame.conn1 ? frame.lB : null,
+      frame.conn2 ? frame.d2R : null, frame.conn2 ? frame.d2L : null, frame.conn2 ? frame.d2B : null,
+      frame.conn3 ? frame.d3R : null, frame.conn3 ? frame.d3L : null, frame.conn3 ? frame.d3B : null,
     ];
 
     final sampleCount = rawArrays.whereType<List<int>>().fold(0, (mx, a) => max(mx, a.length));
@@ -1629,26 +1934,38 @@ class _MonitorPageState extends State<MonitorPage> {
 
     if (frame.seq0 != null) _dispSeq0 = frame.seq0;
     if (frame.seq1 != null) _dispSeq1 = frame.seq1;
-    if (frame.nf0 != null)  _dispNf0  = frame.nf0;
-    if (frame.bo0 != null)  _dispBo0  = frame.bo0;
-    if (frame.nf1 != null)  _dispNf1  = frame.nf1;
-    if (frame.bo1 != null)  _dispBo1  = frame.bo1;
+    if (frame.nf0 != null) _dispNf0 = frame.nf0;
+    if (frame.bo0 != null) _dispBo0 = frame.bo0;
+    if (frame.nf1 != null) _dispNf1 = frame.nf1;
+    if (frame.bo1 != null) _dispBo1 = frame.bo1;
+
+    if (frame.seq2 != null) _dispSeq2 = frame.seq2;
+    if (frame.seq3 != null) _dispSeq3 = frame.seq3;
+    if (frame.nf2 != null) _dispNf2 = frame.nf2;
+    if (frame.bo2 != null) _dispBo2 = frame.bo2;
+    if (frame.nf3 != null) _dispNf3 = frame.nf3;
+    if (frame.bo3 != null) _dispBo3 = frame.bo3;
 
     if (frame.inferReady) _updateAnomalyHistory(frame.anomaly);
     for (int s = 0; s < sampleCount; s++) {
-      for (int ch = 0; ch < 6; ch++) {
+      final validThisSample = List<bool>.filled(12, false);
+      for (int ch = 0; ch < 12; ch++) {
         final arr = rawArrays[ch];
         if (arr == null || s >= arr.length) continue;
         _lastValue[ch] = arr[s] / _adcFullScale;
+        validThisSample[ch] = true;
         _series[ch].add(FlSpot(_tick.toDouble(), _lastValue[ch]));
         if (_series[ch].length > maxPoints) _series[ch].removeAt(0);
       }
-      for (int ch = 0; ch < 6; ch++) {
+      // 切断中／このサンプルにデータが無いチャンネルの stdBuffer には
+      // 古い値を再利用して積み増さない（誤った静止判定を防ぐ）
+      for (int ch = 0; ch < 12; ch++) {
+        if (!validThisSample[ch]) continue;
         _stdBuffer[ch].add(_lastValue[ch]);
         if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
       }
       _updateMotionState();
-      _updateStepCounts(s);
+      _updateStepCounts(s, validThisSample);
       _tick++;
     }
     _pendingUiUpdate = true;
@@ -1664,18 +1981,29 @@ class _MonitorPageState extends State<MonitorPage> {
     _channel = null;
     _alarm.stopAlarm();
     _alarmPlaying = false;
-    setState(() { _connected = false; _status = '未接続'; });
+    setState(() {
+      _connected = false;
+      _status = '未接続';
+    });
   }
 
   void _clearGraph() => setState(() {
-    for (final s in _series) s.clear();
-    _tick = 0;
-    for (final b in _stdBuffer) b.clear();
-    _stationaryMs = 0;
-    _movementMs = 0;
-    _stepCountR = 0; _stepAboveR = false; _stepWindowCountR = 0; _cadenceR = null;
-    _stepCountL = 0; _stepAboveL = false; _stepWindowCountL = 0; _cadenceL = null;
-  });
+        for (final s in _series) s.clear();
+        _tick = 0;
+        for (final b in _stdBuffer) b.clear();
+        _stationaryMs = 0;
+        _movementMs = 0;
+        _stepCountR = 0;
+        _stepAboveR = false;
+        _lastStepTickR = null;
+        _cadenceR = null;
+        _cadenceBelowCountR = 0;
+        _stepCountL = 0;
+        _stepAboveL = false;
+        _lastStepTickL = null;
+        _cadenceL = null;
+        _cadenceBelowCountL = 0;
+      });
 
   Future<void> _openSettings() async {
     final result = await Navigator.of(context).push<AppSettings>(
@@ -1720,6 +2048,7 @@ class _MonitorPageState extends State<MonitorPage> {
     _channel?.sink.close();
     _urlController.dispose();
     _alarm.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -1771,164 +2100,290 @@ class _MonitorPageState extends State<MonitorPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          // デバイス接続状態チップ (ちらつき防止: _disp* 変数を使用)
-          Row(children: [
-            _deviceChip('Dev1 (左足)', frame?.conn0 ?? false,
-                _dispSeq0, _dispNf0, _dispBo0),
-            const SizedBox(width: 8),
-            _deviceChip('Dev2 (右足)', frame?.conn1 ?? false,
-                _dispSeq1, _dispNf1, _dispBo1),
-          ]),
-          const SizedBox(height: 12),
-
+      body: Column(
+        children: [
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ── 左カラム: グラフ ＋ グラフ下ウィジェット ──
-                Expanded(
-                  flex: 1,
-                  child: Column(children: [
-                    Expanded(child: _buildCombinedChart()),
-                    const SizedBox(height: 8),
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(child: NfBoStatusWidget(
-                              label: 'Dev1 左足',
-                              nf: _dispNf0, bo: _dispBo0)),
-                          const SizedBox(width: 6),
-                          Expanded(child: NfBoStatusWidget(
-                              label: 'Dev2 右足',
-                              nf: _dispNf1, bo: _dispBo1)),
-                          const SizedBox(width: 6),
-                          Expanded(child: AnomalyHistoryWidget(
-                              sessions: _anomalySessions,
-                              monitoringStart: _monitoringStart)),
-                        ],
-                      ),
-                    ),
-                  ]),
-                ),
-                const SizedBox(width: 12),
-                // ── 右カラム: ミニ統計 ＋ ヒートマップ＋推論パネル ──
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // ミニ統計カード
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            MiniStatCard(
-                              icon: Icons.pause_circle_outline,
-                              label: '静止時間',
-                              value: _fmtDurationShort(_stationaryMs),
-                              color: const Color(0xFF45B7D1),
-                            ),
-                            const SizedBox(width: 6),
-                            MiniStatCard(
-                              icon: Icons.directions_run,
-                              label: '運動時間',
-                              value: _fmtDurationShort(_movementMs),
-                              color: const Color(0xFFFFA94D),
-                            ),
-                            const SizedBox(width: 6),
-                            MiniStatCard(
-                              icon: Icons.directions_walk,
-                              label: '歩数',
-                              value: '${_stepCountR + _stepCountL}',
-                              color: const Color(0xFF58A6FF),
-                            ),
-                            const SizedBox(width: 6),
-                            MiniStatCard(
-                              icon: Icons.speed,
-                              label: 'ケイデンス 左',
-                              value: _cadenceR != null ? '$_cadenceR spm' : '-',
-                              color: const Color(0xFFA88BFA),
-                            ),
-                            const SizedBox(width: 6),
-                            MiniStatCard(
-                              icon: Icons.speed,
-                              label: 'ケイデンス 右',
-                              value: _cadenceL != null ? '$_cadenceL spm' : '-',
-                              color: const Color(0xFFA88BFA),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // ヒートマップ (左) + 推論パネル (右) を横並び
+            child: GestureDetector(
+              onHorizontalDragUpdate: (details) {
+                if (_dragTriggered) return;
+                _dragAccum += details.delta.dx;
+                const threshold = 30.0; // ← この数値を小さくするほど軽い力で反応する
+                if (_dragAccum < -threshold && _currentPage < 1) {
+                  _dragTriggered = true;
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
+                  );
+                } else if (_dragAccum > threshold && _currentPage > 0) {
+                  _dragTriggered = true;
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
+                  );
+                }
+              },
+              onHorizontalDragEnd: (_) {
+                _dragAccum = 0;
+                _dragTriggered = false;
+              },
+              onHorizontalDragCancel: () {
+                _dragAccum = 0;
+                _dragTriggered = false;
+              },
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentPage = i),
+                children: [
+                  // ══════════════ ページ1: Dev1,2 (既存の表示) ══════════════
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(children: [
+                      // デバイス接続状態チップ (ちらつき防止: _disp* 変数を使用)
+                      Row(children: [
+                        _deviceChip('Dev1 (左足)', frame?.conn0 ?? false, _dispSeq0, _dispNf0, _dispBo0),
+                        const SizedBox(width: 8),
+                        _deviceChip('Dev2 (右足)', frame?.conn1 ?? false, _dispSeq1, _dispNf1, _dispBo1),
+                      ]),
+                      const SizedBox(height: 12),
                       Expanded(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // ── ヒートマップ ──
+                            // ── 左カラム: グラフ ＋ グラフ下ウィジェット ──
                             Expanded(
                               flex: 1,
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF161B22),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: Colors.white10),
+                              child: Column(children: [
+                                Expanded(child: _buildCombinedChart()),
+                                const SizedBox(height: 8),
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(
+                                          child: NfBoStatusWidget(
+                                              label: 'Dev1 左足', nf: _dispNf0, bo: _dispBo0)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                          child: NfBoStatusWidget(
+                                              label: 'Dev2 右足', nf: _dispNf1, bo: _dispBo1)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                          child: AnomalyHistoryWidget(
+                                              sessions: _anomalySessions,
+                                              monitoringStart: _monitoringStart)),
+                                    ],
+                                  ),
                                 ),
-                                child: Column(
-                                  children: [
-                                    const Text('圧力ヒートマップ',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.6)),
-                                    const SizedBox(height: 6),
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: FootHeatmapView(
-                                              values: [
-                                                _lastValue[0],
-                                                _lastValue[1],
-                                                _lastValue[2],
-                                              ],
-                                              points: _heatmapPoints.sublist(0, 3),
-                                              label: 'Dev1 左足',
-                                              connected: frame?.conn0 ?? false,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: FootHeatmapView(
-                                              values: [
-                                                _lastValue[3],
-                                                _lastValue[4],
-                                                _lastValue[5],
-                                              ],
-                                              points: _heatmapPoints.sublist(3, 6),
-                                              label: 'Dev2 右足',
-                                              connected: frame?.conn1 ?? false,
-                                              mirror: true,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                              ]),
+                            ),
+                            const SizedBox(width: 12),
+                            // ── 右カラム: ミニ統計 ＋ ヒートマップ＋推論パネル ──
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // ミニ統計カード
+                                  IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        MiniStatCard(
+                                          icon: Icons.pause_circle_outline,
+                                          label: '静止時間',
+                                          value: _fmtDurationShort(_stationaryMs),
+                                          color: const Color(0xFF45B7D1),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        MiniStatCard(
+                                          icon: Icons.directions_run,
+                                          label: '運動時間',
+                                          value: _fmtDurationShort(_movementMs),
+                                          color: const Color(0xFFFFA94D),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        MiniStatCard(
+                                          icon: Icons.directions_walk,
+                                          label: '歩数',
+                                          value: '${_stepCountR + _stepCountL}',
+                                          color: const Color(0xFF58A6FF),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        MiniStatCard(
+                                          icon: Icons.speed,
+                                          label: 'ケイデンス 左',
+                                          value: _cadenceR != null ? '$_cadenceR spm' : '-',
+                                          color: const Color(0xFFA88BFA),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        MiniStatCard(
+                                          icon: Icons.speed,
+                                          label: 'ケイデンス 右',
+                                          value: _cadenceL != null ? '$_cadenceL spm' : '-',
+                                          color: const Color(0xFFA88BFA),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // ヒートマップ (左) + 推論パネル (右) を横並び
+                                  Expanded(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        // ── ヒートマップ ──
+                                        Expanded(
+                                          flex: 1,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF161B22),
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(color: Colors.white10),
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                const Text('圧力ヒートマップ',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w600,
+                                                        letterSpacing: 0.6)),
+                                                const SizedBox(height: 6),
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: FootHeatmapView(
+                                                          values: [
+                                                            _lastValue[3],
+                                                            _lastValue[4],
+                                                            _lastValue[5],
+                                                          ],
+                                                          points: _heatmapPoints.sublist(0, 3),
+                                                          label: 'Dev1 左足',
+                                                          connected: frame?.conn0 ?? false,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Expanded(
+                                                        child: FootHeatmapView(
+                                                          values: [
+                                                            _lastValue[0],
+                                                            _lastValue[1],
+                                                            _lastValue[2],
+                                                          ],
+                                                          points: _heatmapPoints.sublist(3, 6),
+                                                          label: 'Dev2 右足',
+                                                          connected: frame?.conn1 ?? false,
+                                                          mirror: true,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // ── 推論パネル ──
+                                        Expanded(
+                                          flex: 1,
+                                          child: _buildInferencePanel(frame),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            // ── 推論パネル ──
+                          ],
+                        ),
+                      ),
+                    ]),
+                  ),
+                  // ══════════════ ページ2: Dev3,4 (グラフ + 圧力分布のみ) ══════════════
+                  _buildDev34Page(frame),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ══════════════ Dev3,4 用画面: グラフと圧力分布のみ ══════════════
+  Widget _buildDev34Page(SensorFrame? frame) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: [
+        Row(children: [
+          _deviceChip('Dev3', frame?.conn2 ?? false, _dispSeq2, _dispNf2, _dispBo2),
+          const SizedBox(width: 8),
+          _deviceChip('Dev4', frame?.conn3 ?? false, _dispSeq3, _dispNf3, _dispBo3),
+        ]),
+        const SizedBox(height: 12),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── 左: グラフ ──
+              Expanded(
+                flex: 1,
+                child: _buildCombinedChart(
+                  channels: const [6, 7, 8, 9, 10, 11],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // ── 右: 圧力ヒートマップ ──
+              Expanded(
+                flex: 1,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF161B22),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('圧力ヒートマップ',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.6)),
+                      const SizedBox(height: 6),
+                      Expanded(
+                        child: Row(
+                          children: [
                             Expanded(
-                              flex: 1,
-                              child: _buildInferencePanel(frame),
+                              child: FootHeatmapView(
+                                values: [
+                                  _lastValue[9],
+                                  _lastValue[10],
+                                  _lastValue[11],
+                                ],
+                                points: _heatmapPoints.sublist(6, 9),
+                                label: 'Dev3',
+                                connected: frame?.conn2 ?? false,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: FootHeatmapView(
+                                values: [
+                                  _lastValue[6],
+                                  _lastValue[7],
+                                  _lastValue[8],
+                                ],
+                                points: _heatmapPoints.sublist(9, 12),
+                                label: 'Dev4',
+                                connected: frame?.conn3 ?? false,
+                                mirror: true,
+                              ),
                             ),
                           ],
                         ),
@@ -1936,11 +2391,11 @@ class _MonitorPageState extends State<MonitorPage> {
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 
@@ -1966,27 +2421,33 @@ class _MonitorPageState extends State<MonitorPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(statusText, style: TextStyle(
-              color: statusColor, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 3)),
+          Text(statusText,
+              style: TextStyle(
+                  color: statusColor,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 3)),
           const SizedBox(height: 20),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: ready
                   ? _buildScoreGauge(score, fillColor)
-                  : const Center(child: Text('推論待機中',
-                      style: TextStyle(color: Colors.white24, fontSize: 13))),
+                  : const Center(
+                      child: Text('推論待機中',
+                          style: TextStyle(color: Colors.white24, fontSize: 13))),
             ),
           ),
           const SizedBox(height: 12),
-          const Text('anomaly score', style: TextStyle(color: Color.fromARGB(140, 255, 255, 255), fontSize: 13)),
+          const Text('anomaly score',
+              style: TextStyle(color: Color.fromARGB(140, 255, 255, 255), fontSize: 13)),
           const SizedBox(height: 2),
           Text(ready ? score.toStringAsFixed(4) : '-',
-              style: const TextStyle(color: Colors.white70, fontSize: 20,
+              style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFeatures: [FontFeature.tabularFigures()])),
-          
-
           const SizedBox(height: 12),
         ],
       ),
@@ -1997,8 +2458,10 @@ class _MonitorPageState extends State<MonitorPage> {
     final v = score.clamp(0.0, 1.0);
     return CustomPaint(
       painter: _GaugePainter(value: v, fillColor: fillColor),
-      child: Center(child: Text('${(v * 100).toStringAsFixed(1)}%',
-          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
+      child: Center(
+          child: Text('${(v * 100).toStringAsFixed(1)}%',
+              style: const TextStyle(
+                  color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
     );
   }
 
@@ -2016,10 +2479,9 @@ class _MonitorPageState extends State<MonitorPage> {
           Icon(conn ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
               size: 16, color: conn ? Colors.greenAccent : Colors.redAccent),
           const SizedBox(width: 6),
-          Expanded(child: Text(
-            conn
-                ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}'
-                : '$name  未接続',
+          Expanded(
+              child: Text(
+            conn ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}' : '$name  未接続',
             style: const TextStyle(fontSize: 11, color: Colors.white70),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -2029,8 +2491,9 @@ class _MonitorPageState extends State<MonitorPage> {
     );
   }
 
-  Widget _buildCombinedChart() {
+  Widget _buildCombinedChart({List<int> channels = const [0, 1, 2, 3, 4, 5]}) {
     return Container(
+      clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
@@ -2040,15 +2503,21 @@ class _MonitorPageState extends State<MonitorPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(
-            spacing: 12, runSpacing: 4,
-            children: List.generate(6, (i) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(width: 10, height: 10, color: _chColors[i],
-                    margin: const EdgeInsets.only(right: 4)),
-                Text(_chLabels[i], style: TextStyle(color: _chColors[i], fontSize: 11)),
-              ],
-            )),
+            spacing: 12,
+            runSpacing: 4,
+            children: channels
+                .map((ch) => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            width: 10,
+                            height: 10,
+                            color: _chColors[ch],
+                            margin: const EdgeInsets.only(right: 4)),
+                        Text('${ch % 6 + 1}', style: TextStyle(color: _chColors[ch], fontSize: 11)),
+                      ],
+                    ))
+                .toList(),
           ),
           const SizedBox(height: 8),
           Expanded(
@@ -2061,33 +2530,51 @@ class _MonitorPageState extends State<MonitorPage> {
                     getDrawingVerticalLine: (_) => FlLine(color: Colors.white10, strokeWidth: 0.5),
                   ),
                   titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(sideTitles: SideTitles(
-                      showTitles: true, reservedSize: 44, interval: 0.5,
-                      getTitlesWidget: (v, _) => Text(v.toStringAsFixed(1),
-                          style: const TextStyle(color: Colors.white38, fontSize: 9)),
-                    )),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 48,
+                        interval: 0.5,
+                        // 変更: 素のTextではなくSideTitleWidgetでラップする。
+                        // これによりfl_chartがラベルをreservedSize領域内・軸の外側に
+                        // 正しく配置するようになり、グラフ本体との重なりが解消される。
+                        getTitlesWidget: (v, meta) => SideTitleWidget(
+                          axisSide: meta.axisSide,
+                          child: Text(
+                            v.toStringAsFixed(1),
+                            style: const TextStyle(color: Colors.white38, fontSize: 9),
+                          ),
+                        ),
+                      ),
+                    ),
                     bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                   minX: _tick > maxPoints ? (_tick - maxPoints).toDouble() : 0,
                   maxX: _tick > 0 ? (_tick - 1).toDouble() : (maxPoints - 1).toDouble(),
-                  minY: 0.0, maxY: 1.0,
+                  minY: 0.0,
+                  maxY: 3.5,
+                  clipData: const FlClipData.all(), 
                   borderData: FlBorderData(show: false),
-                  lineBarsData: List.generate(6, (i) => LineChartBarData(
-                    spots: _series[i].isEmpty ? [const FlSpot(0, 0)] : _series[i],
-                    color: _chColors[i], isCurved: false, barWidth: 1.2,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: false),
-                  )),
+                  lineBarsData: channels
+                      .map((ch) => LineChartBarData(
+                            spots: _series[ch].isEmpty ? [const FlSpot(0, 0)] : _series[ch].map((p) => FlSpot(p.x, p.y*3.3)).toList(),
+                            color: _chColors[ch],
+                            isCurved: false,
+                            barWidth: 1.2,
+                            dotData: const FlDotData(show: false),
+                            belowBarData: BarAreaData(show: false),
+                          ))
+                      .toList(),
                   lineTouchData: LineTouchData(
                     enabled: true,
                     touchTooltipData: LineTouchTooltipData(
                       getTooltipColor: (_) => const Color(0xFF0D1117),
                       getTooltipItems: (spots) => spots.map((s) {
-                        final idx = s.barIndex;
-                        return LineTooltipItem('${_chLabels[idx]}: ${s.y.toStringAsFixed(4)}',
-                            TextStyle(color: _chColors[idx], fontSize: 11));
+                        final ch = channels[s.barIndex];
+                        return LineTooltipItem('${_chLabels[ch]}: ${s.y.toStringAsFixed(4)}',
+                            TextStyle(color: _chColors[ch], fontSize: 11));
                       }).toList(),
                     ),
                   ),
@@ -2113,15 +2600,25 @@ class _GaugePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = min(size.width, size.height) / 2 - 8;
     const strokeWidth = 16.0;
-    canvas.drawCircle(center, radius,
-        Paint()..color = Colors.white10..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth..strokeCap = StrokeCap.round);
+    canvas.drawCircle(
+        center,
+        radius,
+        Paint()
+          ..color = Colors.white10
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round);
     if (value > 0) {
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
-        -pi / 2, 2 * pi * value, false,
-        Paint()..color = fillColor..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth..strokeCap = StrokeCap.round,
+        -pi / 2,
+        2 * pi * value,
+        false,
+        Paint()
+          ..color = fillColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round,
       );
     }
   }
