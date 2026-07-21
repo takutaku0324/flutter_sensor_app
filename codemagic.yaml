@@ -6,6 +6,9 @@ workflows:
       xcode: latest
 
     scripts:
+      - name: Clean
+        script: flutter clean
+        
       - name: Get dependencies
         script: flutter pub get
 
