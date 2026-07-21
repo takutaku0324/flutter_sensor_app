@@ -40,13 +40,13 @@ class EspMonitorApp extends StatelessWidget {
           PointerDeviceKind.trackpad,
         },
       ),
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0D1117),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF58A6FF),
-          surface: Color(0xFF161B22),
+      theme: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF1976D2),
+          surface: Colors.white,
         ),
-        textTheme: Typography.material2021().white.apply(
+        textTheme: Typography.material2021().black.apply(
               fontFamily: 'sans-serif',
             ),
       ),
@@ -64,12 +64,12 @@ class IconViewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: Colors.white,
         title: const Text('Icon Display',
             style:
-                TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
       ),
       body: Center(
         child: Column(
@@ -86,20 +86,20 @@ class IconViewPage extends StatelessWidget {
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF161B22),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white10),
+                      border: Border.all(color: Colors.black12),
                     ),
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.image_not_supported_outlined,
-                            size: 64, color: Colors.white24),
+                            size: 64, color: Colors.black26),
                         SizedBox(height: 12),
                         Text('assets/icon.png\nnot found',
                             textAlign: TextAlign.center,
                             style:
-                                TextStyle(color: Colors.white38, fontSize: 12)),
+                                TextStyle(color: Colors.black38, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -108,7 +108,7 @@ class IconViewPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             const Text('Icon Image',
-                style: TextStyle(color: Colors.white54, fontSize: 16)),
+                style: TextStyle(color: Colors.black54, fontSize: 16)),
           ],
         ),
       ),
@@ -534,7 +534,7 @@ class FootHeatmapView extends StatelessWidget {
       children: [
         Text(label,
             style: const TextStyle(
-                color: Colors.white54,
+                color: Colors.black54,
                 fontSize: 11,
                 fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
@@ -583,11 +583,11 @@ class FootHeatmapView extends StatelessWidget {
                     // 未接続オーバーレイ
                     if (!connected)
                       Container(
-                        color: Colors.black54,
+                        color: Colors.black26,
                         child: const Center(
                           child: Text('Not Connected',
                               style:
-                                  TextStyle(color: Colors.white38, fontSize: 12)),
+                                  TextStyle(color: Colors.black45, fontSize: 12)),
                         ),
                       ),
                   ],
@@ -605,9 +605,9 @@ class FootHeatmapView extends StatelessWidget {
   Widget _placeholderFoot() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1F28),
+        color: const Color(0xFFF0F2F5),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: Colors.black12),
       ),
       child: CustomPaint(painter: _FootOutlinePainter()),
     );
@@ -649,7 +649,7 @@ class _FootOutlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white12
+      ..color = Colors.black12
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -668,7 +668,7 @@ class _FootOutlinePainter extends CustomPainter {
 
     // 5本指
     final toePaint = Paint()
-      ..color = Colors.white10
+      ..color = Colors.black.withOpacity(0.06)
       ..style = PaintingStyle.fill;
     final toePositions = [0.20, 0.32, 0.44, 0.57, 0.70];
     for (int i = 0; i < 5; i++) {
@@ -683,7 +683,7 @@ class _FootOutlinePainter extends CustomPainter {
     final tp = TextPainter(
       text: const TextSpan(
         text: 'assets/foot.svg\nnot found',
-        style: TextStyle(color: Colors.white24, fontSize: 10),
+        style: TextStyle(color: Colors.black38, fontSize: 10),
       ),
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
@@ -854,9 +854,9 @@ class _NfBoStatusWidgetState extends State<NfBoStatusWidget> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(color: Colors.black12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -867,7 +867,7 @@ class _NfBoStatusWidgetState extends State<NfBoStatusWidget> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 8,
-                color: Colors.white38,
+                color: Colors.black45,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.8,
               ),
@@ -914,7 +914,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -940,19 +940,19 @@ class AnomalyHistoryWidget extends StatelessWidget {
                           fontSize: 10,
                           height: 1.0,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white)),
+                          color: Colors.black87)),
                 ),
                 GestureDetector(
                     onTap: () => Navigator.of(ctx).pop(),
-                    child: const Icon(Icons.close, size: 10, color: Colors.white)),
+                    child: const Icon(Icons.close, size: 10, color: Colors.black54)),
               ]),
               const SizedBox(height: 16),
               if (totalMs > 0) ...[
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Text(_fmt(rangeStart),
-                      style: const TextStyle(fontSize: 9, color: Colors.white)),
+                      style: const TextStyle(fontSize: 9, color: Colors.black87)),
                   Text(_fmt(now),
-                      style: const TextStyle(fontSize: 9, color: Colors.white)),
+                      style: const TextStyle(fontSize: 9, color: Colors.black87)),
                 ]),
                 const SizedBox(height: 4),
                 ClipRRect(
@@ -962,7 +962,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                     return SizedBox(
                       height: 16,
                       child: Stack(children: [
-                        Container(width: bw, height: 16, color: Colors.white.withOpacity(0.07)),
+                        Container(width: bw, height: 16, color: Colors.black.withOpacity(0.05)),
                         for (final s in sessions)
                           Positioned(
                             left: ((s.start.difference(rangeStart).inMilliseconds /
@@ -1023,14 +1023,14 @@ class AnomalyHistoryWidget extends StatelessWidget {
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                                 fontSize: 11,
-                                                color: Colors.white70,
+                                                color: Colors.black87,
                                                 fontWeight: FontWeight.w600)),
                                         const SizedBox(height: 2),
                                         Text('Duration: ${_dur(s.duration)}',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
-                                                fontSize: 10, color: Colors.white38)),
+                                                fontSize: 10, color: Colors.black45)),
                                       ])),
                                 ]),
                               ))
@@ -1053,10 +1053,10 @@ class AnomalyHistoryWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: count > 0 ? const Color(0xFFFF4444).withOpacity(0.5) : Colors.white10,
+            color: count > 0 ? const Color(0xFFFF4444).withOpacity(0.5) : Colors.black12,
           ),
         ),
         child: Column(
@@ -1069,7 +1069,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 12,
                     height: 1.0,
-                    color: (count > 0 ? const Color(0xFFFF4444) : Colors.white),
+                    color: (count > 0 ? const Color(0xFFFF4444) : Colors.black87),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.8)),
             const SizedBox(height: 4),
@@ -1119,7 +1119,7 @@ class MiniStatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withOpacity(0.35)),
         ),
@@ -1137,7 +1137,7 @@ class MiniStatCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                       fontSize: 10,
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.4)),
               const SizedBox(height: 4),
@@ -1206,7 +1206,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
       SizedBox(
         width: 68,
         child:
-            Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+            Text(label, style: const TextStyle(color: Colors.black54, fontSize: 11)),
       ),
       Expanded(
         child: Slider(
@@ -1215,7 +1215,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
           max: max,
           divisions: divisions,
           activeColor: color,
-          inactiveColor: Colors.white10,
+          inactiveColor: Colors.black12,
           onChanged: onChanged,
         ),
       ),
@@ -1234,18 +1234,18 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: Colors.white,
         title: const Text('Heatmap Settings',
             style:
-                TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(_points),
             child: const Text('Save',
                 style: TextStyle(
-                    color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                    color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () {
@@ -1257,7 +1257,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
               });
             },
             child: const Text('Reset',
-                style: TextStyle(color: Colors.white38, fontSize: 12)),
+                style: TextStyle(color: Colors.black45, fontSize: 12)),
           ),
         ],
       ),
@@ -1270,7 +1270,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF161B22),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: p.color.withOpacity(0.35)),
             ),
@@ -1302,7 +1302,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                       icon: Icon(
                         p.visible ? Icons.visibility : Icons.visibility_off,
                         size: 18,
-                        color: p.visible ? Colors.white70 : Colors.white24,
+                        color: p.visible ? Colors.black54 : Colors.black26,
                       ),
                       onPressed: () {
                         setState(() => _points[idx] = p.copyWith(visible: !p.visible));
@@ -1403,7 +1403,7 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.fromLTRB(2, 18, 2, 8),
         child: Text(text,
             style: const TextStyle(
-                color: Color(0xFF58A6FF),
+                color: Color(0xFF1976D2),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.8)),
@@ -1412,9 +1412,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _card({required Widget child}) => Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(color: Colors.black12),
         ),
         child: child,
       );
@@ -1423,16 +1423,16 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final connected = widget.isConnected;
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161B22),
-        title: const Text('Settings', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.white,
+        title: const Text('Settings', style: TextStyle(color: Colors.black87)),
         actions: [
           TextButton(
             onPressed: _save,
             child: const Text('Save',
                 style: TextStyle(
-                    color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                    color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1446,12 +1446,12 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 TextField(
                   controller: _urlController,
-                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                  style: const TextStyle(fontSize: 13, color: Colors.black87),
                   decoration: InputDecoration(
                     labelText: 'WebSocket URL',
-                    labelStyle: const TextStyle(color: Colors.white38),
+                    labelStyle: const TextStyle(color: Colors.black45),
                     filled: true,
-                    fillColor: const Color(0xFF0D1117),
+                    fillColor: const Color(0xFFF5F7FA),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
@@ -1460,14 +1460,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   Icon(
                     connected ? Icons.circle : Icons.circle_outlined,
                     size: 10,
-                    color: connected ? Colors.greenAccent : Colors.redAccent,
+                    color: connected ? Colors.green : Colors.red,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     connected ? 'Connected' : 'Not Connected',
                     style: TextStyle(
                       fontSize: 12,
-                      color: connected ? Colors.greenAccent : Colors.redAccent,
+                      color: connected ? Colors.green : Colors.red,
                     ),
                   ),
                 ]),
@@ -1500,42 +1500,42 @@ class _SettingsPageState extends State<SettingsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('Std Dev Threshold', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const Text('Std Dev Threshold', style: TextStyle(color: Colors.black87, fontSize: 13)),
                   Text(_threshold.toStringAsFixed(2),
                       style: const TextStyle(
-                          color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                          color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
                 ]),
                 Slider(
                   value: _threshold,
                   min: 0.01,
                   max: 1.0,
                   divisions: 99,
-                  activeColor: const Color(0xFF58A6FF),
-                  inactiveColor: Colors.white10,
+                  activeColor: const Color(0xFF1976D2),
+                  inactiveColor: Colors.black12,
                   onChanged: (v) => setState(() => _threshold = v),
                 ),
                 const SizedBox(height: 4),
-                const Divider(color: Colors.white10, height: 1),
+                const Divider(color: Colors.black12, height: 1),
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   const Text('Detection Window (samples)',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      style: TextStyle(color: Colors.black87, fontSize: 13)),
                   Text('$_windowSize',
                       style: const TextStyle(
-                          color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
+                          color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
                 ]),
                 Slider(
                   value: _windowSize.toDouble(),
                   min: 20,
                   max: 600,
                   divisions: 58,
-                  activeColor: const Color(0xFF58A6FF),
-                  inactiveColor: Colors.white10,
+                  activeColor: const Color(0xFF1976D2),
+                  inactiveColor: Colors.black12,
                   onChanged: (v) => setState(() => _windowSize = v.round()),
                 ),
                 Text(
                   'Window of approx. ${(_windowSize * 16 / 1000).toStringAsFixed(2)}s at 62.5Hz sampling',
-                  style: const TextStyle(color: Colors.white24, fontSize: 11),
+                  style: const TextStyle(color: Colors.black38, fontSize: 11),
                 ),
               ],
             ),
@@ -1545,9 +1545,9 @@ class _SettingsPageState extends State<SettingsPage> {
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Play alarm sound on anomaly detection',
-                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  style: TextStyle(color: Colors.black87, fontSize: 13)),
               value: _alarmEnabled,
-              activeColor: const Color(0xFF58A6FF),
+              activeColor: const Color(0xFF1976D2),
               onChanged: (v) => setState(() => _alarmEnabled = v),
             ),
           ),
@@ -1555,12 +1555,12 @@ class _SettingsPageState extends State<SettingsPage> {
           _card(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.thermostat_outlined, color: Color(0xFF58A6FF)),
+              leading: const Icon(Icons.thermostat_outlined, color: Color(0xFF1976D2)),
               title: const Text('Edit sensor point position/intensity',
-                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  style: TextStyle(color: Colors.black87, fontSize: 13)),
               subtitle: const Text('Set X/Y position, Gaussian width, and intensity multiplier for each channel',
-                  style: TextStyle(color: Colors.white38, fontSize: 11)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+                  style: TextStyle(color: Colors.black38, fontSize: 11)),
+              trailing: const Icon(Icons.chevron_right, color: Colors.black38),
               onTap: () async {
                 final result = await Navigator.of(context).push<List<HeatmapPoint>>(
                   MaterialPageRoute(
@@ -1575,12 +1575,12 @@ class _SettingsPageState extends State<SettingsPage> {
           _card(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.image_outlined, color: Color(0xFF58A6FF)),
+              leading: const Icon(Icons.image_outlined, color: Color(0xFF1976D2)),
               title: const Text('Icon Display',
-                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  style: TextStyle(color: Colors.black87, fontSize: 13)),
               subtitle: const Text('Open screen showing PNG icon',
-                  style: TextStyle(color: Colors.white38, fontSize: 11)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+                  style: TextStyle(color: Colors.black38, fontSize: 11)),
+              trailing: const Icon(Icons.chevron_right, color: Colors.black38),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const IconViewPage()),
@@ -2063,16 +2063,17 @@ class _MonitorPageState extends State<MonitorPage> {
   Widget build(BuildContext context) {
     final frame = _latest;
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: Colors.white,
         title: const Text('Firefighter Device Monitor',
-            style: TextStyle(color: Color(0xFFFF4848), fontWeight: FontWeight.bold)),
+            style: TextStyle(color: Color(0xFFD32F2F), fontWeight: FontWeight.bold)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(left: 4),
             child: Icon(
               _connected ? Icons.circle : Icons.circle_outlined,
-              color: _connected ? Colors.greenAccent : Colors.redAccent,
+              color: _connected ? Colors.green : Colors.red,
               size: 12,
             ),
           ),
@@ -2081,21 +2082,21 @@ class _MonitorPageState extends State<MonitorPage> {
             child: Center(
               child: Text(
                 _status,
-                style: const TextStyle(fontSize: 12, color: Colors.white54),
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
             ),
           ),
           IconButton(
             tooltip: 'Settings & Connection',
             onPressed: _openSettings,
-            icon: const Icon(Icons.settings, color: Colors.white54),
+            icon: const Icon(Icons.settings, color: Colors.black54),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 4),
             child: IconButton(
               tooltip: 'Reset Graph',
               onPressed: _clearGraph,
-              icon: const Icon(Icons.refresh, color: Colors.white54),
+              icon: const Icon(Icons.refresh, color: Colors.black54),
             ),
           ),
         ],
@@ -2192,35 +2193,35 @@ class _MonitorPageState extends State<MonitorPage> {
                                           icon: Icons.pause_circle_outline,
                                           label: 'Stationary Time',
                                           value: _fmtDurationShort(_stationaryMs),
-                                          color: const Color(0xFF45B7D1),
+                                          color: const Color(0xFF0288D1),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.directions_run,
                                           label: 'Movement Time',
                                           value: _fmtDurationShort(_movementMs),
-                                          color: const Color(0xFFFFA94D),
+                                          color: const Color(0xFFEF6C00),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.directions_walk,
                                           label: 'Steps',
                                           value: '${_stepCountR + _stepCountL}',
-                                          color: const Color(0xFF58A6FF),
+                                          color: const Color(0xFF1976D2),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.speed,
                                           label: 'Cadence L',
                                           value: _cadenceR != null ? '$_cadenceR spm' : '-',
-                                          color: const Color(0xFFA88BFA),
+                                          color: const Color(0xFF7B4FD6),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.speed,
                                           label: 'Cadence R',
                                           value: _cadenceL != null ? '$_cadenceL spm' : '-',
-                                          color: const Color(0xFFA88BFA),
+                                          color: const Color(0xFF7B4FD6),
                                         ),
                                       ],
                                     ),
@@ -2237,15 +2238,15 @@ class _MonitorPageState extends State<MonitorPage> {
                                           child: Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF161B22),
+                                              color: Colors.white,
                                               borderRadius: BorderRadius.circular(10),
-                                              border: Border.all(color: Colors.white10),
+                                              border: Border.all(color: Colors.black12),
                                             ),
                                             child: Column(
                                               children: [
                                                 const Text('Pressure Heatmap',
                                                     style: TextStyle(
-                                                        color: Colors.white,
+                                                        color: Colors.black87,
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w600,
                                                         letterSpacing: 0.6)),
@@ -2343,15 +2344,15 @@ class _MonitorPageState extends State<MonitorPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF161B22),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: Colors.black12),
                   ),
                   child: Column(
                     children: [
                       const Text('Pressure Heatmap',
                           style: TextStyle(
-                              color: Colors.white,
+                              color: Colors.black87,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.6)),
@@ -2403,19 +2404,19 @@ class _MonitorPageState extends State<MonitorPage> {
     final ready = frame?.inferReady ?? false;
     final score = frame?.score ?? 0.0;
     final anomaly = frame?.anomaly ?? false;
-    const dangerColor = Color(0xFFFF4444);
-    const normalColor = Color(0xFF00C853);
+    const dangerColor = Color(0xFFD32F2F);
+    const normalColor = Color(0xFF2E7D32);
     final fillColor = anomaly ? dangerColor : normalColor;
     final statusText = !ready ? 'Collecting...' : (anomaly ? 'DANGER' : 'NORMAL');
-    final statusColor = !ready ? Colors.white38 : (anomaly ? dangerColor : normalColor);
+    final statusColor = !ready ? Colors.black38 : (anomaly ? dangerColor : normalColor);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: ready ? fillColor.withOpacity(0.4) : const Color(0xFF58A6FF).withOpacity(0.2),
+          color: ready ? fillColor.withOpacity(0.4) : const Color(0xFF1976D2).withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -2435,16 +2436,16 @@ class _MonitorPageState extends State<MonitorPage> {
                   ? _buildScoreGauge(score, fillColor)
                   : const Center(
                       child: Text('Waiting for inference',
-                          style: TextStyle(color: Colors.white24, fontSize: 13))),
+                          style: TextStyle(color: Colors.black26, fontSize: 13))),
             ),
           ),
           const SizedBox(height: 12),
           const Text('anomaly score',
-              style: TextStyle(color: Color.fromARGB(140, 255, 255, 255), fontSize: 13)),
+              style: TextStyle(color: Colors.black54, fontSize: 13)),
           const SizedBox(height: 2),
           Text(ready ? score.toStringAsFixed(4) : '-',
               style: const TextStyle(
-                  color: Colors.white70,
+                  color: Colors.black87,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFeatures: [FontFeature.tabularFigures()])),
@@ -2461,7 +2462,7 @@ class _MonitorPageState extends State<MonitorPage> {
       child: Center(
           child: Text('${(v * 100).toStringAsFixed(1)}%',
               style: const TextStyle(
-                  color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
+                  color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold))),
     );
   }
 
@@ -2470,19 +2471,19 @@ class _MonitorPageState extends State<MonitorPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: (conn ? Colors.greenAccent : Colors.redAccent).withOpacity(0.4)),
+              color: (conn ? Colors.green : Colors.red).withOpacity(0.4)),
         ),
         child: Row(children: [
           Icon(conn ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
-              size: 16, color: conn ? Colors.greenAccent : Colors.redAccent),
+              size: 16, color: conn ? Colors.green : Colors.red),
           const SizedBox(width: 6),
           Expanded(
               child: Text(
             conn ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}' : '$name  Not Connected',
-            style: const TextStyle(fontSize: 11, color: Colors.white70),
+            style: const TextStyle(fontSize: 11, color: Colors.black87),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           )),
@@ -2496,8 +2497,9 @@ class _MonitorPageState extends State<MonitorPage> {
       clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2526,8 +2528,8 @@ class _MonitorPageState extends State<MonitorPage> {
                 LineChartData(
                   gridData: FlGridData(
                     show: true,
-                    getDrawingHorizontalLine: (_) => FlLine(color: Colors.white10, strokeWidth: 0.5),
-                    getDrawingVerticalLine: (_) => FlLine(color: Colors.white10, strokeWidth: 0.5),
+                    getDrawingHorizontalLine: (_) => FlLine(color: Colors.black12, strokeWidth: 0.5),
+                    getDrawingVerticalLine: (_) => FlLine(color: Colors.black12, strokeWidth: 0.5),
                   ),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
@@ -2542,7 +2544,7 @@ class _MonitorPageState extends State<MonitorPage> {
                           axisSide: meta.axisSide,
                           child: Text(
                             v.toStringAsFixed(1),
-                            style: const TextStyle(color: Colors.white38, fontSize: 9),
+                            style: const TextStyle(color: Colors.black45, fontSize: 9),
                           ),
                         ),
                       ),
@@ -2570,7 +2572,7 @@ class _MonitorPageState extends State<MonitorPage> {
                   lineTouchData: LineTouchData(
                     enabled: true,
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (_) => const Color(0xFF0D1117),
+                      getTooltipColor: (_) => Colors.white,
                       getTooltipItems: (spots) => spots.map((s) {
                         final ch = channels[s.barIndex];
                         return LineTooltipItem('${_chLabels[ch]}: ${s.y.toStringAsFixed(4)}',
@@ -2604,7 +2606,7 @@ class _GaugePainter extends CustomPainter {
         center,
         radius,
         Paint()
-          ..color = Colors.white10
+          ..color = Colors.black12
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth
           ..strokeCap = StrokeCap.round);
