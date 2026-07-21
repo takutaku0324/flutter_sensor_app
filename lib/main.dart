@@ -379,7 +379,7 @@ class FootHeatmapView extends StatelessWidget {
                   Container(
                       color: Colors.black12,
                       child: const Center(
-                          child: Text('未接続',
+                          child: Text('Not connected',
                               style: TextStyle(
                                   color: Colors.black38, fontSize: 12)))),
               ]);
@@ -615,7 +615,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                                 : const Color(0xFF00C853)),
                         const SizedBox(width: 8),
                         Expanded(
-                            child: Text('異常履歴: ${sessions.length}回',
+                            child: Text('Anomaly history: ${sessions.length} occurrences',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -767,7 +767,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('異常履歴',
+              Text('Anomaly history',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -1141,7 +1141,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         size: 10,
                         color: connected ? Colors.green : Colors.redAccent),
                     const SizedBox(width: 6),
-                    Text(connected ? '接続中' : '未接続',
+                    Text(connected ? 'Connected' : 'Not connected',
                         style: TextStyle(
                             fontSize: 12,
                             color: connected
@@ -1309,7 +1309,7 @@ class _MonitorPageState extends State<MonitorPage> {
 
   WebSocketChannel? _channel;
   bool _connected = false;
-  String _status = '未接続';
+  String _status = 'Not connected';
   SensorFrame? _latest;
 
   int? _dispSeq0, _dispSeq1, _dispNf0, _dispBo0, _dispNf1, _dispBo1;
@@ -1467,7 +1467,7 @@ class _MonitorPageState extends State<MonitorPage> {
       _channel = channel;
       setState(() {
         _connected = true;
-        _status = '接続中';
+        _status = 'Connected';
       });
       channel.stream.listen(
         (msg) {
@@ -1554,7 +1554,7 @@ class _MonitorPageState extends State<MonitorPage> {
     _alarmPlaying = false;
     setState(() {
       _connected = false;
-      _status = '未接続';
+      _status = 'Not connected';
     });
   }
 
@@ -1730,10 +1730,10 @@ class _MonitorPageState extends State<MonitorPage> {
           padding: const EdgeInsets.all(16),
           child: Column(children: [
             Row(children: [
-              _deviceChip('Dev1 (左足)', frame?.conn0 ?? false,
+              _deviceChip('Dev1 (Left foot)', frame?.conn0 ?? false,
                   _dispSeq0, _dispNf0, _dispBo0),
               const SizedBox(width: 8),
-              _deviceChip('Dev2 (右足)', frame?.conn1 ?? false,
+              _deviceChip('Dev2 (Right foot)', frame?.conn1 ?? false,
                   _dispSeq1, _dispNf1, _dispBo1),
             ]),
             const SizedBox(height: 12),
@@ -1753,13 +1753,13 @@ class _MonitorPageState extends State<MonitorPage> {
                                 children: [
                               Expanded(
                                   child: NfBoStatusWidget(
-                                      label: 'Dev1 左足',
+                                      label: 'Dev1 Left foot',
                                       nf: _dispNf0,
                                       bo: _dispBo0)),
                               const SizedBox(width: 6),
                               Expanded(
                                   child: NfBoStatusWidget(
-                                      label: 'Dev2 右足',
+                                      label: 'Dev2 Right foot',
                                       nf: _dispNf1,
                                       bo: _dispBo1)),
                               const SizedBox(width: 6),
@@ -1784,28 +1784,28 @@ class _MonitorPageState extends State<MonitorPage> {
                                 children: [
                               MiniStatCard(
                                   icon: Icons.pause_circle_outline,
-                                  label: '静止時間',
+                                  label: 'Stationary time',
                                   value: _fmtDurationShort(
                                       _stationaryMs),
                                   color: const Color(0xFF45B7D1)),
                               const SizedBox(width: 6),
                               MiniStatCard(
                                   icon: Icons.directions_run,
-                                  label: '運動時間',
+                                  label: 'Active time',
                                   value:
                                       _fmtDurationShort(_movementMs),
                                   color: const Color(0xFFFFA94D)),
                               const SizedBox(width: 6),
                               MiniStatCard(
                                   icon: Icons.directions_walk,
-                                  label: '歩数',
+                                  label: 'Step Count',
                                   value:
                                       '${_stepCountR + _stepCountL}',
                                   color: const Color(0xFF1A73E8)),
                               const SizedBox(width: 6),
                               MiniStatCard(
                                   icon: Icons.speed,
-                                  label: 'ケイデンス 左',
+                                  label: 'Cadence Left',
                                   value: _cadenceR != null
                                       ? '$_cadenceR spm'
                                       : '-',
@@ -1813,7 +1813,7 @@ class _MonitorPageState extends State<MonitorPage> {
                               const SizedBox(width: 6),
                               MiniStatCard(
                                   icon: Icons.speed,
-                                  label: 'ケイデンス 右',
+                                  label: 'Cadence Right',
                                   value: _cadenceL != null
                                       ? '$_cadenceL spm'
                                       : '-',
@@ -1841,7 +1841,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text('圧力ヒートマップ',
+                                      const Text('Pressure heatmap',
                                           style: TextStyle(
                                               color: Colors.black87,
                                               fontSize: 12,
@@ -1874,7 +1874,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                             ],
                                             points: _heatmapPoints
                                                 .sublist(0, 3),
-                                            label: 'Dev1 左足',
+                                            label: 'Dev1 Left foot',
                                             connected:
                                                 frame?.conn0 ?? false,
                                             repaintKey:
@@ -1889,7 +1889,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                             ],
                                             points: _heatmapPoints
                                                 .sublist(3, 6),
-                                            label: 'Dev2 右足',
+                                            label: 'Dev2 Right foot',
                                             connected:
                                                 frame?.conn1 ?? false,
                                             mirror: true,
@@ -1999,7 +1999,7 @@ class _MonitorPageState extends State<MonitorPage> {
             child: Text(
           conn
               ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}'
-              : '$name  未接続',
+              : '$name  Not connected',
           style: const TextStyle(fontSize: 11, color: Colors.black87),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
