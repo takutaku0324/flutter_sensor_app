@@ -790,7 +790,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                         : const Color(0xFF00C853)),
                 const SizedBox(width: 4),
                 Flexible(
-                    child: Text('$count 回',
+                    child: Text('$count',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
