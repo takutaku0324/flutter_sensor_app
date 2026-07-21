@@ -67,7 +67,7 @@ class IconViewPage extends StatelessWidget {
       backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
         backgroundColor: const Color(0xFF161B22),
-        title: const Text('アイコン表示',
+        title: const Text('Icon Display',
             style:
                 TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
       ),
@@ -96,7 +96,7 @@ class IconViewPage extends StatelessWidget {
                         Icon(Icons.image_not_supported_outlined,
                             size: 64, color: Colors.white24),
                         SizedBox(height: 12),
-                        Text('assets/icon.png\nが見つかりません',
+                        Text('assets/icon.png\nnot found',
                             textAlign: TextAlign.center,
                             style:
                                 TextStyle(color: Colors.white38, fontSize: 12)),
@@ -107,7 +107,7 @@ class IconViewPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('アイコン画像',
+            const Text('Icon Image',
                 style: TextStyle(color: Colors.white54, fontSize: 16)),
           ],
         ),
@@ -300,7 +300,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'R_R (内前)',
+        name: 'R_R (Inner Front)',
         color: const Color(0xFFFF6B6B)),
     HeatmapPoint(
         x: 0.29,
@@ -308,7 +308,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'R_L (外前)',
+        name: 'R_L (Outer Front)',
         color: const Color(0xFFFFA94D)),
     HeatmapPoint(
         x: 0.47,
@@ -316,7 +316,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'R_B (踵)',
+        name: 'R_B (Heel)',
         color: const Color(0xFFFFD43B)),
     // Dev2 左足 (画像右側に表示)
     HeatmapPoint(
@@ -325,7 +325,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'L_R (外前)',
+        name: 'L_R (Outer Front)',
         color: const Color(0xFF4ECDC4)),
     HeatmapPoint(
         x: 0.32,
@@ -333,7 +333,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'L_L (内前)',
+        name: 'L_L (Inner Front)',
         color: const Color(0xFF45B7D1)),
     HeatmapPoint(
         x: 0.51,
@@ -341,7 +341,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'L_B (踵)',
+        name: 'L_B (Heel)',
         color: const Color(0xFFA88BFA)),
     // Dev3 (画像左側に表示)
     HeatmapPoint(
@@ -366,7 +366,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev34,
         weightMul: 1.0,
-        name: 'D3_B (踵)',
+        name: 'D3_B (Heel)',
         color: const Color(0xFFFFD43B)),
     // Dev4 (画像右側に表示)
     HeatmapPoint(
@@ -391,7 +391,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev34,
         weightMul: 1.0,
-        name: 'D4_B (踵)',
+        name: 'D4_B (Heel)',
         color: const Color(0xFFA88BFA)),
   ];
 }
@@ -585,7 +585,7 @@ class FootHeatmapView extends StatelessWidget {
                       Container(
                         color: Colors.black54,
                         child: const Center(
-                          child: Text('未接続',
+                          child: Text('Not Connected',
                               style:
                                   TextStyle(color: Colors.white38, fontSize: 12)),
                         ),
@@ -682,7 +682,7 @@ class _FootOutlinePainter extends CustomPainter {
     // プレースホルダーテキスト
     final tp = TextPainter(
       text: const TextSpan(
-        text: 'assets/foot.svg\nが見つかりません',
+        text: 'assets/foot.svg\nnot found',
         style: TextStyle(color: Colors.white24, fontSize: 10),
       ),
       textAlign: TextAlign.center,
@@ -901,7 +901,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
 
   String _dur(Duration d) =>
-      d.inSeconds < 60 ? '${d.inSeconds}秒' : '${d.inMinutes}分${d.inSeconds % 60}秒';
+      d.inSeconds < 60 ? '${d.inSeconds}s' : '${d.inMinutes}m ${d.inSeconds % 60}s';
 
   void _showPopup(BuildContext context) {
     final now = DateTime.now();
@@ -933,7 +933,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                         : const Color(0xFF00C853)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('異常履歴: ${sessions.length}回',
+                  child: Text('Anomaly History: ${sessions.length}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -988,7 +988,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Center(
-                      child: Text('異常なし',
+                      child: Text('No Anomalies',
                           style: TextStyle(color: Color(0xFF00C853), fontSize: 13))),
                 )
               else
@@ -1026,7 +1026,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                                                 color: Colors.white70,
                                                 fontWeight: FontWeight.w600)),
                                         const SizedBox(height: 2),
-                                        Text('継続時間: ${_dur(s.duration)}',
+                                        Text('Duration: ${_dur(s.duration)}',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
@@ -1063,7 +1063,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('異常履歴',
+            Text('Anomaly History',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -1079,7 +1079,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                   color: count > 0 ? const Color(0xFFFF4444) : const Color(0xFF00C853)),
               const SizedBox(width: 4),
               Flexible(
-                child: Text('$count 回',
+                child: Text('$count',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -1237,13 +1237,13 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
       backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
         backgroundColor: const Color(0xFF161B22),
-        title: const Text('ヒートマップ 設定',
+        title: const Text('Heatmap Settings',
             style:
                 TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(_points),
-            child: const Text('保存',
+            child: const Text('Save',
                 style: TextStyle(
                     color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
           ),
@@ -1256,7 +1256,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                 }
               });
             },
-            child: const Text('リセット',
+            child: const Text('Reset',
                 style: TextStyle(color: Colors.white38, fontSize: 12)),
           ),
         ],
@@ -1311,14 +1311,14 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                _slider('X 位置', p.x, 0.0, 1.0, 100,
+                _slider('X Position', p.x, 0.0, 1.0, 100,
                     (v) => setState(() => _points[idx] = p.copyWith(x: v)), p.color),
-                _slider('Y 位置', p.y, 0.0, 1.0, 100,
+                _slider('Y Position', p.y, 0.0, 1.0, 100,
                     (v) => setState(() => _points[idx] = p.copyWith(y: v)), p.color),
-                _slider('広がり (σ)', p.sigma, 0.02, 0.5, 48,
+                _slider('Spread (σ)', p.sigma, 0.02, 0.5, 48,
                     (v) => setState(() => _points[idx] = p.copyWith(sigma: v)), p.color),
                 _slider(
-                  '縦倍率',
+                  'Y Scale',
                   p.sigmaY,
                   0.1,
                   3.0,
@@ -1326,7 +1326,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                   (v) => setState(() => _points[idx] = p.copyWith(sigmaY: v)),
                   p.color,
                 ),
-                _slider('強度倍率', p.weightMul, 0.0, 2.0, 40,
+                _slider('Intensity', p.weightMul, 0.0, 2.0, 40,
                     (v) => setState(() => _points[idx] = p.copyWith(weightMul: v)),
                     p.color),
               ],
@@ -1426,11 +1426,11 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
         backgroundColor: const Color(0xFF161B22),
-        title: const Text('設定', style: TextStyle(color: Colors.white)),
+        title: const Text('Settings', style: TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('保存',
+            child: const Text('Save',
                 style: TextStyle(
                     color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
           ),
@@ -1439,7 +1439,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
         children: [
-          _sectionTitle('接続'),
+          _sectionTitle('Connection'),
           _card(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1464,7 +1464,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    connected ? '接続中' : '未接続',
+                    connected ? 'Connected' : 'Not Connected',
                     style: TextStyle(
                       fontSize: 12,
                       color: connected ? Colors.greenAccent : Colors.redAccent,
@@ -1478,7 +1478,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     onPressed: connected ? _disconnect : _connect,
                     icon: Icon(connected ? Icons.link_off : Icons.link, size: 18),
                     label: Text(
-                      connected ? '切断する' : '接続する',
+                      connected ? 'Disconnect' : 'Connect',
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -1494,13 +1494,13 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-          _sectionTitle('静止／運動 判定'),
+          _sectionTitle('Stationary/Movement Detection'),
           _card(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('標準偏差しきい値', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const Text('Std Dev Threshold', style: TextStyle(color: Colors.white70, fontSize: 13)),
                   Text(_threshold.toStringAsFixed(2),
                       style: const TextStyle(
                           color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
@@ -1518,7 +1518,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const Divider(color: Colors.white10, height: 1),
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('判定ウィンドウ（サンプル数）',
+                  const Text('Detection Window (samples)',
                       style: TextStyle(color: Colors.white70, fontSize: 13)),
                   Text('$_windowSize',
                       style: const TextStyle(
@@ -1534,31 +1534,31 @@ class _SettingsPageState extends State<SettingsPage> {
                   onChanged: (v) => setState(() => _windowSize = v.round()),
                 ),
                 Text(
-                  '62.5Hzサンプリングのため約 ${(_windowSize * 16 / 1000).toStringAsFixed(2)} 秒分の窓',
+                  'Window of approx. ${(_windowSize * 16 / 1000).toStringAsFixed(2)}s at 62.5Hz sampling',
                   style: const TextStyle(color: Colors.white24, fontSize: 11),
                 ),
               ],
             ),
           ),
-          _sectionTitle('アラーム'),
+          _sectionTitle('Alarm'),
           _card(
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('異常検知時にアラーム音を再生',
+              title: const Text('Play alarm sound on anomaly detection',
                   style: TextStyle(color: Colors.white70, fontSize: 13)),
               value: _alarmEnabled,
               activeColor: const Color(0xFF58A6FF),
               onChanged: (v) => setState(() => _alarmEnabled = v),
             ),
           ),
-          _sectionTitle('ヒートマップ'),
+          _sectionTitle('Heatmap'),
           _card(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.thermostat_outlined, color: Color(0xFF58A6FF)),
-              title: const Text('センサー点の位置・強度を編集',
+              title: const Text('Edit sensor point position/intensity',
                   style: TextStyle(color: Colors.white70, fontSize: 13)),
-              subtitle: const Text('各チャンネルの X/Y 位置・ガウス幅・強度倍率を設定',
+              subtitle: const Text('Set X/Y position, Gaussian width, and intensity multiplier for each channel',
                   style: TextStyle(color: Colors.white38, fontSize: 11)),
               trailing: const Icon(Icons.chevron_right, color: Colors.white38),
               onTap: () async {
@@ -1571,14 +1571,14 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
           ),
-          _sectionTitle('画面'),
+          _sectionTitle('Screen'),
           _card(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.image_outlined, color: Color(0xFF58A6FF)),
-              title: const Text('アイコン表示',
+              title: const Text('Icon Display',
                   style: TextStyle(color: Colors.white70, fontSize: 13)),
-              subtitle: const Text('PNG アイコンを表示する画面を開く',
+              subtitle: const Text('Open screen showing PNG icon',
                   style: TextStyle(color: Colors.white38, fontSize: 11)),
               trailing: const Icon(Icons.chevron_right, color: Colors.white38),
               onTap: () {
@@ -1624,7 +1624,7 @@ class _MonitorPageState extends State<MonitorPage> {
 
   WebSocketChannel? _channel;
   bool _connected = false;
-  String _status = '未接続';
+  String _status = 'Not Connected';
   SensorFrame? _latest;
   StreamSubscription? _wsSub;
   Timer? _reconnectTimer;
@@ -1854,7 +1854,7 @@ class _MonitorPageState extends State<MonitorPage> {
       _channel = channel;
       setState(() {
         _connected = true;
-        _status = '接続試行中...';
+        _status = 'Connecting...';
       });
 
       _wsSub = channel.stream.listen(
@@ -1864,9 +1864,9 @@ class _MonitorPageState extends State<MonitorPage> {
             // 実際にデータを受信できた時点で再接続バックオフをリセットする
             _reconnectAttempts = 0;
             if (mounted) {
-              setState(() => _status = '接続中');
+              setState(() => _status = 'Connected');
             } else {
-              _status = '接続中';
+              _status = 'Connected';
             }
           }
           Map<String, dynamic> raw;
@@ -1877,12 +1877,12 @@ class _MonitorPageState extends State<MonitorPage> {
           }
           _pushFrame(SensorFrame.fromJson(raw));
         },
-        onError: (_) => _handleDisconnect('接続エラー'),
-        onDone: () => _handleDisconnect('切断されました'),
+        onError: (_) => _handleDisconnect('Connection Error'),
+        onDone: () => _handleDisconnect('Disconnected'),
         cancelOnError: true,
       );
     } catch (e) {
-      _handleDisconnect('エラー: $e');
+      _handleDisconnect('Error: $e');
     }
   }
 
@@ -1903,7 +1903,7 @@ class _MonitorPageState extends State<MonitorPage> {
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(Duration(milliseconds: delayMs), () {
       if (!mounted || _manualDisconnect) return;
-      setState(() => _status = '再接続中... (${_reconnectAttempts}回目)');
+      setState(() => _status = 'Reconnecting... (attempt ${_reconnectAttempts})');
       _connect();
     });
   }
@@ -1983,7 +1983,7 @@ class _MonitorPageState extends State<MonitorPage> {
     _alarmPlaying = false;
     setState(() {
       _connected = false;
-      _status = '未接続';
+      _status = 'Not Connected';
     });
   }
 
@@ -2056,7 +2056,7 @@ class _MonitorPageState extends State<MonitorPage> {
     final totalSec = ms ~/ 1000;
     final m = totalSec ~/ 60;
     final s = totalSec % 60;
-    return m > 0 ? '${m}分${s}秒' : '${s}秒';
+    return m > 0 ? '${m}m ${s}s' : '${s}s';
   }
 
   @override
@@ -2086,14 +2086,14 @@ class _MonitorPageState extends State<MonitorPage> {
             ),
           ),
           IconButton(
-            tooltip: '設定・接続',
+            tooltip: 'Settings & Connection',
             onPressed: _openSettings,
             icon: const Icon(Icons.settings, color: Colors.white54),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 4),
             child: IconButton(
-              tooltip: 'グラフをリセット',
+              tooltip: 'Reset Graph',
               onPressed: _clearGraph,
               icon: const Icon(Icons.refresh, color: Colors.white54),
             ),
@@ -2140,9 +2140,9 @@ class _MonitorPageState extends State<MonitorPage> {
                     child: Column(children: [
                       // デバイス接続状態チップ (ちらつき防止: _disp* 変数を使用)
                       Row(children: [
-                        _deviceChip('Dev1 (左足)', frame?.conn0 ?? false, _dispSeq0, _dispNf0, _dispBo0),
+                        _deviceChip('Dev1 (Left Foot)', frame?.conn0 ?? false, _dispSeq0, _dispNf0, _dispBo0),
                         const SizedBox(width: 8),
-                        _deviceChip('Dev2 (右足)', frame?.conn1 ?? false, _dispSeq1, _dispNf1, _dispBo1),
+                        _deviceChip('Dev2 (Right Foot)', frame?.conn1 ?? false, _dispSeq1, _dispNf1, _dispBo1),
                       ]),
                       const SizedBox(height: 12),
                       Expanded(
@@ -2161,11 +2161,11 @@ class _MonitorPageState extends State<MonitorPage> {
                                     children: [
                                       Expanded(
                                           child: NfBoStatusWidget(
-                                              label: 'Dev1 左足', nf: _dispNf0, bo: _dispBo0)),
+                                              label: 'Dev1 Left Foot', nf: _dispNf0, bo: _dispBo0)),
                                       const SizedBox(width: 6),
                                       Expanded(
                                           child: NfBoStatusWidget(
-                                              label: 'Dev2 右足', nf: _dispNf1, bo: _dispBo1)),
+                                              label: 'Dev2 Right Foot', nf: _dispNf1, bo: _dispBo1)),
                                       const SizedBox(width: 6),
                                       Expanded(
                                           child: AnomalyHistoryWidget(
@@ -2190,35 +2190,35 @@ class _MonitorPageState extends State<MonitorPage> {
                                       children: [
                                         MiniStatCard(
                                           icon: Icons.pause_circle_outline,
-                                          label: '静止時間',
+                                          label: 'Stationary Time',
                                           value: _fmtDurationShort(_stationaryMs),
                                           color: const Color(0xFF45B7D1),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.directions_run,
-                                          label: '運動時間',
+                                          label: 'Movement Time',
                                           value: _fmtDurationShort(_movementMs),
                                           color: const Color(0xFFFFA94D),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.directions_walk,
-                                          label: '歩数',
+                                          label: 'Steps',
                                           value: '${_stepCountR + _stepCountL}',
                                           color: const Color(0xFF58A6FF),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.speed,
-                                          label: 'ケイデンス 左',
+                                          label: 'Cadence L',
                                           value: _cadenceR != null ? '$_cadenceR spm' : '-',
                                           color: const Color(0xFFA88BFA),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.speed,
-                                          label: 'ケイデンス 右',
+                                          label: 'Cadence R',
                                           value: _cadenceL != null ? '$_cadenceL spm' : '-',
                                           color: const Color(0xFFA88BFA),
                                         ),
@@ -2243,7 +2243,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                             ),
                                             child: Column(
                                               children: [
-                                                const Text('圧力ヒートマップ',
+                                                const Text('Pressure Heatmap',
                                                     style: TextStyle(
                                                         color: Colors.white,
                                                         fontSize: 12,
@@ -2261,7 +2261,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                                             _lastValue[5],
                                                           ],
                                                           points: _heatmapPoints.sublist(0, 3),
-                                                          label: 'Dev1 左足',
+                                                          label: 'Dev1 Left Foot',
                                                           connected: frame?.conn0 ?? false,
                                                         ),
                                                       ),
@@ -2274,7 +2274,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                                             _lastValue[2],
                                                           ],
                                                           points: _heatmapPoints.sublist(3, 6),
-                                                          label: 'Dev2 右足',
+                                                          label: 'Dev2 Right Foot',
                                                           connected: frame?.conn1 ?? false,
                                                           mirror: true,
                                                         ),
@@ -2337,7 +2337,7 @@ class _MonitorPageState extends State<MonitorPage> {
                 ),
               ),
               const SizedBox(width: 12),
-              // ── 右: 圧力ヒートマップ ──
+              // ── 右: Pressure Heatmap ──
               Expanded(
                 flex: 1,
                 child: Container(
@@ -2349,7 +2349,7 @@ class _MonitorPageState extends State<MonitorPage> {
                   ),
                   child: Column(
                     children: [
-                      const Text('圧力ヒートマップ',
+                      const Text('Pressure Heatmap',
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -2406,7 +2406,7 @@ class _MonitorPageState extends State<MonitorPage> {
     const dangerColor = Color(0xFFFF4444);
     const normalColor = Color(0xFF00C853);
     final fillColor = anomaly ? dangerColor : normalColor;
-    final statusText = !ready ? '収集中...' : (anomaly ? 'DANGER' : 'NORMAL');
+    final statusText = !ready ? 'Collecting...' : (anomaly ? 'DANGER' : 'NORMAL');
     final statusColor = !ready ? Colors.white38 : (anomaly ? dangerColor : normalColor);
 
     return Container(
@@ -2434,7 +2434,7 @@ class _MonitorPageState extends State<MonitorPage> {
               child: ready
                   ? _buildScoreGauge(score, fillColor)
                   : const Center(
-                      child: Text('推論待機中',
+                      child: Text('Waiting for inference',
                           style: TextStyle(color: Colors.white24, fontSize: 13))),
             ),
           ),
@@ -2481,7 +2481,7 @@ class _MonitorPageState extends State<MonitorPage> {
           const SizedBox(width: 6),
           Expanded(
               child: Text(
-            conn ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}' : '$name  未接続',
+            conn ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}' : '$name  Not Connected',
             style: const TextStyle(fontSize: 11, color: Colors.white70),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
