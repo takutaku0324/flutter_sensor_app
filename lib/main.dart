@@ -40,13 +40,13 @@ class EspMonitorApp extends StatelessWidget {
           PointerDeviceKind.trackpad,
         },
       ),
-      theme: ThemeData.light().copyWith(
-        scaffoldBackgroundColor: const Color(0xFFF5F7FA),
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFF1976D2),
-          surface: Colors.white,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0D1117),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF58A6FF),
+          surface: Color(0xFF161B22),
         ),
-        textTheme: Typography.material2021().black.apply(
+        textTheme: Typography.material2021().white.apply(
               fontFamily: 'sans-serif',
             ),
       ),
@@ -64,12 +64,12 @@ class IconViewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Icon Display',
+        backgroundColor: const Color(0xFF161B22),
+        title: const Text('アイコン表示',
             style:
-                TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
       ),
       body: Center(
         child: Column(
@@ -86,20 +86,20 @@ class IconViewPage extends StatelessWidget {
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFF161B22),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.black12),
+                      border: Border.all(color: Colors.white10),
                     ),
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.image_not_supported_outlined,
-                            size: 64, color: Colors.black26),
+                            size: 64, color: Colors.white24),
                         SizedBox(height: 12),
-                        Text('assets/icon.png\nnot found',
+                        Text('assets/icon.png\nが見つかりません',
                             textAlign: TextAlign.center,
                             style:
-                                TextStyle(color: Colors.black38, fontSize: 12)),
+                                TextStyle(color: Colors.white38, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -107,8 +107,8 @@ class IconViewPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Icon Image',
-                style: TextStyle(color: Colors.black54, fontSize: 16)),
+            const Text('アイコン画像',
+                style: TextStyle(color: Colors.white54, fontSize: 16)),
           ],
         ),
       ),
@@ -300,7 +300,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'R_R (Inner Front)',
+        name: 'R_R (内前)',
         color: const Color(0xFFFF6B6B)),
     HeatmapPoint(
         x: 0.29,
@@ -308,7 +308,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'R_L (Outer Front)',
+        name: 'R_L (外前)',
         color: const Color(0xFFFFA94D)),
     HeatmapPoint(
         x: 0.47,
@@ -316,7 +316,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'R_B (Heel)',
+        name: 'R_B (踵)',
         color: const Color(0xFFFFD43B)),
     // Dev2 左足 (画像右側に表示)
     HeatmapPoint(
@@ -325,7 +325,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'L_R (Outer Front)',
+        name: 'L_R (外前)',
         color: const Color(0xFF4ECDC4)),
     HeatmapPoint(
         x: 0.32,
@@ -333,7 +333,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'L_L (Inner Front)',
+        name: 'L_L (内前)',
         color: const Color(0xFF45B7D1)),
     HeatmapPoint(
         x: 0.51,
@@ -341,7 +341,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev12,
         weightMul: 1.0,
-        name: 'L_B (Heel)',
+        name: 'L_B (踵)',
         color: const Color(0xFFA88BFA)),
     // Dev3 (画像左側に表示)
     HeatmapPoint(
@@ -366,7 +366,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev34,
         weightMul: 1.0,
-        name: 'D3_B (Heel)',
+        name: 'D3_B (踵)',
         color: const Color(0xFFFFD43B)),
     // Dev4 (画像右側に表示)
     HeatmapPoint(
@@ -391,7 +391,7 @@ List<HeatmapPoint> defaultHeatmapPoints() {
         sigma: 0.27,
         sigmaY: sigmaYDev34,
         weightMul: 1.0,
-        name: 'D4_B (Heel)',
+        name: 'D4_B (踵)',
         color: const Color(0xFFA88BFA)),
   ];
 }
@@ -534,7 +534,7 @@ class FootHeatmapView extends StatelessWidget {
       children: [
         Text(label,
             style: const TextStyle(
-                color: Colors.black54,
+                color: Colors.white54,
                 fontSize: 11,
                 fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
@@ -583,11 +583,11 @@ class FootHeatmapView extends StatelessWidget {
                     // 未接続オーバーレイ
                     if (!connected)
                       Container(
-                        color: Colors.black26,
+                        color: Colors.black54,
                         child: const Center(
-                          child: Text('Not Connected',
+                          child: Text('未接続',
                               style:
-                                  TextStyle(color: Colors.black45, fontSize: 12)),
+                                  TextStyle(color: Colors.white38, fontSize: 12)),
                         ),
                       ),
                   ],
@@ -605,9 +605,9 @@ class FootHeatmapView extends StatelessWidget {
   Widget _placeholderFoot() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F2F5),
+        color: const Color(0xFF1A1F28),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black12),
+        border: Border.all(color: Colors.white10),
       ),
       child: CustomPaint(painter: _FootOutlinePainter()),
     );
@@ -649,7 +649,7 @@ class _FootOutlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black12
+      ..color = Colors.white12
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -668,7 +668,7 @@ class _FootOutlinePainter extends CustomPainter {
 
     // 5本指
     final toePaint = Paint()
-      ..color = Colors.black.withOpacity(0.06)
+      ..color = Colors.white10
       ..style = PaintingStyle.fill;
     final toePositions = [0.20, 0.32, 0.44, 0.57, 0.70];
     for (int i = 0; i < 5; i++) {
@@ -682,8 +682,8 @@ class _FootOutlinePainter extends CustomPainter {
     // プレースホルダーテキスト
     final tp = TextPainter(
       text: const TextSpan(
-        text: 'assets/foot.svg\nnot found',
-        style: TextStyle(color: Colors.black38, fontSize: 10),
+        text: 'assets/foot.svg\nが見つかりません',
+        style: TextStyle(color: Colors.white24, fontSize: 10),
       ),
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
@@ -854,9 +854,9 @@ class _NfBoStatusWidgetState extends State<NfBoStatusWidget> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.black12),
+          border: Border.all(color: Colors.white10),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -867,7 +867,7 @@ class _NfBoStatusWidgetState extends State<NfBoStatusWidget> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 8,
-                color: Colors.black45,
+                color: Colors.white38,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.8,
               ),
@@ -901,7 +901,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
 
   String _dur(Duration d) =>
-      d.inSeconds < 60 ? '${d.inSeconds}s' : '${d.inMinutes}m ${d.inSeconds % 60}s';
+      d.inSeconds < 60 ? '${d.inSeconds}秒' : '${d.inMinutes}分${d.inSeconds % 60}秒';
 
   void _showPopup(BuildContext context) {
     final now = DateTime.now();
@@ -914,7 +914,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF161B22),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -933,26 +933,26 @@ class AnomalyHistoryWidget extends StatelessWidget {
                         : const Color(0xFF00C853)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Anomaly History: ${sessions.length}',
+                  child: Text('異常履歴: ${sessions.length}回',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                           fontSize: 10,
                           height: 1.0,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
+                          color: Colors.white)),
                 ),
                 GestureDetector(
                     onTap: () => Navigator.of(ctx).pop(),
-                    child: const Icon(Icons.close, size: 10, color: Colors.black54)),
+                    child: const Icon(Icons.close, size: 10, color: Colors.white)),
               ]),
               const SizedBox(height: 16),
               if (totalMs > 0) ...[
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Text(_fmt(rangeStart),
-                      style: const TextStyle(fontSize: 9, color: Colors.black87)),
+                      style: const TextStyle(fontSize: 9, color: Colors.white)),
                   Text(_fmt(now),
-                      style: const TextStyle(fontSize: 9, color: Colors.black87)),
+                      style: const TextStyle(fontSize: 9, color: Colors.white)),
                 ]),
                 const SizedBox(height: 4),
                 ClipRRect(
@@ -962,7 +962,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                     return SizedBox(
                       height: 16,
                       child: Stack(children: [
-                        Container(width: bw, height: 16, color: Colors.black.withOpacity(0.05)),
+                        Container(width: bw, height: 16, color: Colors.white.withOpacity(0.07)),
                         for (final s in sessions)
                           Positioned(
                             left: ((s.start.difference(rangeStart).inMilliseconds /
@@ -988,7 +988,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Center(
-                      child: Text('No Anomalies',
+                      child: Text('異常なし',
                           style: TextStyle(color: Color(0xFF00C853), fontSize: 13))),
                 )
               else
@@ -1023,14 +1023,14 @@ class AnomalyHistoryWidget extends StatelessWidget {
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                                 fontSize: 11,
-                                                color: Colors.black87,
+                                                color: Colors.white70,
                                                 fontWeight: FontWeight.w600)),
                                         const SizedBox(height: 2),
-                                        Text('Duration: ${_dur(s.duration)}',
+                                        Text('継続時間: ${_dur(s.duration)}',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
-                                                fontSize: 10, color: Colors.black45)),
+                                                fontSize: 10, color: Colors.white38)),
                                       ])),
                                 ]),
                               ))
@@ -1053,23 +1053,23 @@ class AnomalyHistoryWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: count > 0 ? const Color(0xFFFF4444).withOpacity(0.5) : Colors.black12,
+            color: count > 0 ? const Color(0xFFFF4444).withOpacity(0.5) : Colors.white10,
           ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Anomaly History',
+            Text('異常履歴',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     fontSize: 12,
                     height: 1.0,
-                    color: (count > 0 ? const Color(0xFFFF4444) : Colors.black87),
+                    color: (count > 0 ? const Color(0xFFFF4444) : Colors.white),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.8)),
             const SizedBox(height: 4),
@@ -1079,7 +1079,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                   color: count > 0 ? const Color(0xFFFF4444) : const Color(0xFF00C853)),
               const SizedBox(width: 4),
               Flexible(
-                child: Text('$count',
+                child: Text('$count 回',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -1119,7 +1119,7 @@ class MiniStatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withOpacity(0.35)),
         ),
@@ -1137,7 +1137,7 @@ class MiniStatCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                       fontSize: 10,
-                      color: Colors.black87,
+                      color: Colors.white,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.4)),
               const SizedBox(height: 4),
@@ -1206,7 +1206,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
       SizedBox(
         width: 68,
         child:
-            Text(label, style: const TextStyle(color: Colors.black54, fontSize: 11)),
+            Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11)),
       ),
       Expanded(
         child: Slider(
@@ -1215,7 +1215,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
           max: max,
           divisions: divisions,
           activeColor: color,
-          inactiveColor: Colors.black12,
+          inactiveColor: Colors.white10,
           onChanged: onChanged,
         ),
       ),
@@ -1234,18 +1234,18 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Heatmap Settings',
+        backgroundColor: const Color(0xFF161B22),
+        title: const Text('ヒートマップ 設定',
             style:
-                TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(_points),
-            child: const Text('Save',
+            child: const Text('保存',
                 style: TextStyle(
-                    color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
+                    color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () {
@@ -1256,8 +1256,8 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                 }
               });
             },
-            child: const Text('Reset',
-                style: TextStyle(color: Colors.black45, fontSize: 12)),
+            child: const Text('リセット',
+                style: TextStyle(color: Colors.white38, fontSize: 12)),
           ),
         ],
       ),
@@ -1270,7 +1270,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF161B22),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: p.color.withOpacity(0.35)),
             ),
@@ -1302,7 +1302,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                       icon: Icon(
                         p.visible ? Icons.visibility : Icons.visibility_off,
                         size: 18,
-                        color: p.visible ? Colors.black54 : Colors.black26,
+                        color: p.visible ? Colors.white70 : Colors.white24,
                       ),
                       onPressed: () {
                         setState(() => _points[idx] = p.copyWith(visible: !p.visible));
@@ -1311,14 +1311,14 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                _slider('X Position', p.x, 0.0, 1.0, 100,
+                _slider('X 位置', p.x, 0.0, 1.0, 100,
                     (v) => setState(() => _points[idx] = p.copyWith(x: v)), p.color),
-                _slider('Y Position', p.y, 0.0, 1.0, 100,
+                _slider('Y 位置', p.y, 0.0, 1.0, 100,
                     (v) => setState(() => _points[idx] = p.copyWith(y: v)), p.color),
-                _slider('Spread (σ)', p.sigma, 0.02, 0.5, 48,
+                _slider('広がり (σ)', p.sigma, 0.02, 0.5, 48,
                     (v) => setState(() => _points[idx] = p.copyWith(sigma: v)), p.color),
                 _slider(
-                  'Y Scale',
+                  '縦倍率',
                   p.sigmaY,
                   0.1,
                   3.0,
@@ -1326,7 +1326,7 @@ class _HeatmapSettingsPageState extends State<HeatmapSettingsPage> {
                   (v) => setState(() => _points[idx] = p.copyWith(sigmaY: v)),
                   p.color,
                 ),
-                _slider('Intensity', p.weightMul, 0.0, 2.0, 40,
+                _slider('強度倍率', p.weightMul, 0.0, 2.0, 40,
                     (v) => setState(() => _points[idx] = p.copyWith(weightMul: v)),
                     p.color),
               ],
@@ -1403,7 +1403,7 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.fromLTRB(2, 18, 2, 8),
         child: Text(text,
             style: const TextStyle(
-                color: Color(0xFF1976D2),
+                color: Color(0xFF58A6FF),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.8)),
@@ -1412,9 +1412,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _card({required Widget child}) => Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.black12),
+          border: Border.all(color: Colors.white10),
         ),
         child: child,
       );
@@ -1423,35 +1423,35 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final connected = widget.isConnected;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Settings', style: TextStyle(color: Colors.black87)),
+        backgroundColor: const Color(0xFF161B22),
+        title: const Text('設定', style: TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('Save',
+            child: const Text('保存',
                 style: TextStyle(
-                    color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
+                    color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
         children: [
-          _sectionTitle('Connection'),
+          _sectionTitle('接続'),
           _card(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: _urlController,
-                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                  style: const TextStyle(fontSize: 13, color: Colors.white70),
                   decoration: InputDecoration(
                     labelText: 'WebSocket URL',
-                    labelStyle: const TextStyle(color: Colors.black45),
+                    labelStyle: const TextStyle(color: Colors.white38),
                     filled: true,
-                    fillColor: const Color(0xFFF5F7FA),
+                    fillColor: const Color(0xFF0D1117),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
@@ -1460,14 +1460,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   Icon(
                     connected ? Icons.circle : Icons.circle_outlined,
                     size: 10,
-                    color: connected ? Colors.green : Colors.red,
+                    color: connected ? Colors.greenAccent : Colors.redAccent,
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    connected ? 'Connected' : 'Not Connected',
+                    connected ? '接続中' : '未接続',
                     style: TextStyle(
                       fontSize: 12,
-                      color: connected ? Colors.green : Colors.red,
+                      color: connected ? Colors.greenAccent : Colors.redAccent,
                     ),
                   ),
                 ]),
@@ -1478,7 +1478,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     onPressed: connected ? _disconnect : _connect,
                     icon: Icon(connected ? Icons.link_off : Icons.link, size: 18),
                     label: Text(
-                      connected ? 'Disconnect' : 'Connect',
+                      connected ? '切断する' : '接続する',
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -1494,73 +1494,73 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-          _sectionTitle('Stationary/Movement Detection'),
+          _sectionTitle('静止／運動 判定'),
           _card(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('Std Dev Threshold', style: TextStyle(color: Colors.black87, fontSize: 13)),
+                  const Text('標準偏差しきい値', style: TextStyle(color: Colors.white70, fontSize: 13)),
                   Text(_threshold.toStringAsFixed(2),
                       style: const TextStyle(
-                          color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
+                          color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
                 ]),
                 Slider(
                   value: _threshold,
                   min: 0.01,
                   max: 1.0,
                   divisions: 99,
-                  activeColor: const Color(0xFF1976D2),
-                  inactiveColor: Colors.black12,
+                  activeColor: const Color(0xFF58A6FF),
+                  inactiveColor: Colors.white10,
                   onChanged: (v) => setState(() => _threshold = v),
                 ),
                 const SizedBox(height: 4),
-                const Divider(color: Colors.black12, height: 1),
+                const Divider(color: Colors.white10, height: 1),
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('Detection Window (samples)',
-                      style: TextStyle(color: Colors.black87, fontSize: 13)),
+                  const Text('判定ウィンドウ（サンプル数）',
+                      style: TextStyle(color: Colors.white70, fontSize: 13)),
                   Text('$_windowSize',
                       style: const TextStyle(
-                          color: Color(0xFF1976D2), fontWeight: FontWeight.bold)),
+                          color: Color(0xFF58A6FF), fontWeight: FontWeight.bold)),
                 ]),
                 Slider(
                   value: _windowSize.toDouble(),
                   min: 20,
                   max: 600,
                   divisions: 58,
-                  activeColor: const Color(0xFF1976D2),
-                  inactiveColor: Colors.black12,
+                  activeColor: const Color(0xFF58A6FF),
+                  inactiveColor: Colors.white10,
                   onChanged: (v) => setState(() => _windowSize = v.round()),
                 ),
                 Text(
-                  'Window of approx. ${(_windowSize * 16 / 1000).toStringAsFixed(2)}s at 62.5Hz sampling',
-                  style: const TextStyle(color: Colors.black38, fontSize: 11),
+                  '62.5Hzサンプリングのため約 ${(_windowSize * 16 / 1000).toStringAsFixed(2)} 秒分の窓',
+                  style: const TextStyle(color: Colors.white24, fontSize: 11),
                 ),
               ],
             ),
           ),
-          _sectionTitle('Alarm'),
+          _sectionTitle('アラーム'),
           _card(
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Play alarm sound on anomaly detection',
-                  style: TextStyle(color: Colors.black87, fontSize: 13)),
+              title: const Text('異常検知時にアラーム音を再生',
+                  style: TextStyle(color: Colors.white70, fontSize: 13)),
               value: _alarmEnabled,
-              activeColor: const Color(0xFF1976D2),
+              activeColor: const Color(0xFF58A6FF),
               onChanged: (v) => setState(() => _alarmEnabled = v),
             ),
           ),
-          _sectionTitle('Heatmap'),
+          _sectionTitle('ヒートマップ'),
           _card(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.thermostat_outlined, color: Color(0xFF1976D2)),
-              title: const Text('Edit sensor point position/intensity',
-                  style: TextStyle(color: Colors.black87, fontSize: 13)),
-              subtitle: const Text('Set X/Y position, Gaussian width, and intensity multiplier for each channel',
-                  style: TextStyle(color: Colors.black38, fontSize: 11)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.black38),
+              leading: const Icon(Icons.thermostat_outlined, color: Color(0xFF58A6FF)),
+              title: const Text('センサー点の位置・強度を編集',
+                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+              subtitle: const Text('各チャンネルの X/Y 位置・ガウス幅・強度倍率を設定',
+                  style: TextStyle(color: Colors.white38, fontSize: 11)),
+              trailing: const Icon(Icons.chevron_right, color: Colors.white38),
               onTap: () async {
                 final result = await Navigator.of(context).push<List<HeatmapPoint>>(
                   MaterialPageRoute(
@@ -1571,16 +1571,16 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
           ),
-          _sectionTitle('Screen'),
+          _sectionTitle('画面'),
           _card(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.image_outlined, color: Color(0xFF1976D2)),
-              title: const Text('Icon Display',
-                  style: TextStyle(color: Colors.black87, fontSize: 13)),
-              subtitle: const Text('Open screen showing PNG icon',
-                  style: TextStyle(color: Colors.black38, fontSize: 11)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.black38),
+              leading: const Icon(Icons.image_outlined, color: Color(0xFF58A6FF)),
+              title: const Text('アイコン表示',
+                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+              subtitle: const Text('PNG アイコンを表示する画面を開く',
+                  style: TextStyle(color: Colors.white38, fontSize: 11)),
+              trailing: const Icon(Icons.chevron_right, color: Colors.white38),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const IconViewPage()),
@@ -1624,7 +1624,7 @@ class _MonitorPageState extends State<MonitorPage> {
 
   WebSocketChannel? _channel;
   bool _connected = false;
-  String _status = 'Not Connected';
+  String _status = '未接続';
   SensorFrame? _latest;
   StreamSubscription? _wsSub;
   Timer? _reconnectTimer;
@@ -1854,7 +1854,7 @@ class _MonitorPageState extends State<MonitorPage> {
       _channel = channel;
       setState(() {
         _connected = true;
-        _status = 'Connecting...';
+        _status = '接続試行中...';
       });
 
       _wsSub = channel.stream.listen(
@@ -1864,9 +1864,9 @@ class _MonitorPageState extends State<MonitorPage> {
             // 実際にデータを受信できた時点で再接続バックオフをリセットする
             _reconnectAttempts = 0;
             if (mounted) {
-              setState(() => _status = 'Connected');
+              setState(() => _status = '接続中');
             } else {
-              _status = 'Connected';
+              _status = '接続中';
             }
           }
           Map<String, dynamic> raw;
@@ -1877,12 +1877,12 @@ class _MonitorPageState extends State<MonitorPage> {
           }
           _pushFrame(SensorFrame.fromJson(raw));
         },
-        onError: (_) => _handleDisconnect('Connection Error'),
-        onDone: () => _handleDisconnect('Disconnected'),
+        onError: (_) => _handleDisconnect('接続エラー'),
+        onDone: () => _handleDisconnect('切断されました'),
         cancelOnError: true,
       );
     } catch (e) {
-      _handleDisconnect('Error: $e');
+      _handleDisconnect('エラー: $e');
     }
   }
 
@@ -1903,7 +1903,7 @@ class _MonitorPageState extends State<MonitorPage> {
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(Duration(milliseconds: delayMs), () {
       if (!mounted || _manualDisconnect) return;
-      setState(() => _status = 'Reconnecting... (attempt ${_reconnectAttempts})');
+      setState(() => _status = '再接続中... (${_reconnectAttempts}回目)');
       _connect();
     });
   }
@@ -1983,7 +1983,7 @@ class _MonitorPageState extends State<MonitorPage> {
     _alarmPlaying = false;
     setState(() {
       _connected = false;
-      _status = 'Not Connected';
+      _status = '未接続';
     });
   }
 
@@ -2056,24 +2056,23 @@ class _MonitorPageState extends State<MonitorPage> {
     final totalSec = ms ~/ 1000;
     final m = totalSec ~/ 60;
     final s = totalSec % 60;
-    return m > 0 ? '${m}m ${s}s' : '${s}s';
+    return m > 0 ? '${m}分${s}秒' : '${s}秒';
   }
 
   @override
   Widget build(BuildContext context) {
     final frame = _latest;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF161B22),
         title: const Text('Firefighter Device Monitor',
-            style: TextStyle(color: Color(0xFFD32F2F), fontWeight: FontWeight.bold)),
+            style: TextStyle(color: Color(0xFFFF4848), fontWeight: FontWeight.bold)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(left: 4),
             child: Icon(
               _connected ? Icons.circle : Icons.circle_outlined,
-              color: _connected ? Colors.green : Colors.red,
+              color: _connected ? Colors.greenAccent : Colors.redAccent,
               size: 12,
             ),
           ),
@@ -2082,21 +2081,21 @@ class _MonitorPageState extends State<MonitorPage> {
             child: Center(
               child: Text(
                 _status,
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: const TextStyle(fontSize: 12, color: Colors.white54),
               ),
             ),
           ),
           IconButton(
-            tooltip: 'Settings & Connection',
+            tooltip: '設定・接続',
             onPressed: _openSettings,
-            icon: const Icon(Icons.settings, color: Colors.black54),
+            icon: const Icon(Icons.settings, color: Colors.white54),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 4),
             child: IconButton(
-              tooltip: 'Reset Graph',
+              tooltip: 'グラフをリセット',
               onPressed: _clearGraph,
-              icon: const Icon(Icons.refresh, color: Colors.black54),
+              icon: const Icon(Icons.refresh, color: Colors.white54),
             ),
           ),
         ],
@@ -2141,9 +2140,9 @@ class _MonitorPageState extends State<MonitorPage> {
                     child: Column(children: [
                       // デバイス接続状態チップ (ちらつき防止: _disp* 変数を使用)
                       Row(children: [
-                        _deviceChip('Dev1 (Left Foot)', frame?.conn0 ?? false, _dispSeq0, _dispNf0, _dispBo0),
+                        _deviceChip('Dev1 (左足)', frame?.conn0 ?? false, _dispSeq0, _dispNf0, _dispBo0),
                         const SizedBox(width: 8),
-                        _deviceChip('Dev2 (Right Foot)', frame?.conn1 ?? false, _dispSeq1, _dispNf1, _dispBo1),
+                        _deviceChip('Dev2 (右足)', frame?.conn1 ?? false, _dispSeq1, _dispNf1, _dispBo1),
                       ]),
                       const SizedBox(height: 12),
                       Expanded(
@@ -2162,11 +2161,11 @@ class _MonitorPageState extends State<MonitorPage> {
                                     children: [
                                       Expanded(
                                           child: NfBoStatusWidget(
-                                              label: 'Dev1 Left Foot', nf: _dispNf0, bo: _dispBo0)),
+                                              label: 'Dev1 左足', nf: _dispNf0, bo: _dispBo0)),
                                       const SizedBox(width: 6),
                                       Expanded(
                                           child: NfBoStatusWidget(
-                                              label: 'Dev2 Right Foot', nf: _dispNf1, bo: _dispBo1)),
+                                              label: 'Dev2 右足', nf: _dispNf1, bo: _dispBo1)),
                                       const SizedBox(width: 6),
                                       Expanded(
                                           child: AnomalyHistoryWidget(
@@ -2191,37 +2190,37 @@ class _MonitorPageState extends State<MonitorPage> {
                                       children: [
                                         MiniStatCard(
                                           icon: Icons.pause_circle_outline,
-                                          label: 'Stationary Time',
+                                          label: '静止時間',
                                           value: _fmtDurationShort(_stationaryMs),
-                                          color: const Color(0xFF0288D1),
+                                          color: const Color(0xFF45B7D1),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.directions_run,
-                                          label: 'Movement Time',
+                                          label: '運動時間',
                                           value: _fmtDurationShort(_movementMs),
-                                          color: const Color(0xFFEF6C00),
+                                          color: const Color(0xFFFFA94D),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.directions_walk,
-                                          label: 'Steps',
+                                          label: '歩数',
                                           value: '${_stepCountR + _stepCountL}',
-                                          color: const Color(0xFF1976D2),
+                                          color: const Color(0xFF58A6FF),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.speed,
-                                          label: 'Cadence L',
+                                          label: 'ケイデンス 左',
                                           value: _cadenceR != null ? '$_cadenceR spm' : '-',
-                                          color: const Color(0xFF7B4FD6),
+                                          color: const Color(0xFFA88BFA),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.speed,
-                                          label: 'Cadence R',
+                                          label: 'ケイデンス 右',
                                           value: _cadenceL != null ? '$_cadenceL spm' : '-',
-                                          color: const Color(0xFF7B4FD6),
+                                          color: const Color(0xFFA88BFA),
                                         ),
                                       ],
                                     ),
@@ -2238,15 +2237,15 @@ class _MonitorPageState extends State<MonitorPage> {
                                           child: Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: Colors.white,
+                                              color: const Color(0xFF161B22),
                                               borderRadius: BorderRadius.circular(10),
-                                              border: Border.all(color: Colors.black12),
+                                              border: Border.all(color: Colors.white10),
                                             ),
                                             child: Column(
                                               children: [
-                                                const Text('Pressure Heatmap',
+                                                const Text('圧力ヒートマップ',
                                                     style: TextStyle(
-                                                        color: Colors.black87,
+                                                        color: Colors.white,
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w600,
                                                         letterSpacing: 0.6)),
@@ -2262,7 +2261,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                                             _lastValue[5],
                                                           ],
                                                           points: _heatmapPoints.sublist(0, 3),
-                                                          label: 'Dev1 Left Foot',
+                                                          label: 'Dev1 左足',
                                                           connected: frame?.conn0 ?? false,
                                                         ),
                                                       ),
@@ -2275,7 +2274,7 @@ class _MonitorPageState extends State<MonitorPage> {
                                                             _lastValue[2],
                                                           ],
                                                           points: _heatmapPoints.sublist(3, 6),
-                                                          label: 'Dev2 Right Foot',
+                                                          label: 'Dev2 右足',
                                                           connected: frame?.conn1 ?? false,
                                                           mirror: true,
                                                         ),
@@ -2338,21 +2337,21 @@ class _MonitorPageState extends State<MonitorPage> {
                 ),
               ),
               const SizedBox(width: 12),
-              // ── 右: Pressure Heatmap ──
+              // ── 右: 圧力ヒートマップ ──
               Expanded(
                 flex: 1,
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF161B22),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.black12),
+                    border: Border.all(color: Colors.white10),
                   ),
                   child: Column(
                     children: [
-                      const Text('Pressure Heatmap',
+                      const Text('圧力ヒートマップ',
                           style: TextStyle(
-                              color: Colors.black87,
+                              color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.6)),
@@ -2404,19 +2403,19 @@ class _MonitorPageState extends State<MonitorPage> {
     final ready = frame?.inferReady ?? false;
     final score = frame?.score ?? 0.0;
     final anomaly = frame?.anomaly ?? false;
-    const dangerColor = Color(0xFFD32F2F);
-    const normalColor = Color(0xFF2E7D32);
+    const dangerColor = Color(0xFFFF4444);
+    const normalColor = Color(0xFF00C853);
     final fillColor = anomaly ? dangerColor : normalColor;
-    final statusText = !ready ? 'Collecting...' : (anomaly ? 'DANGER' : 'NORMAL');
-    final statusColor = !ready ? Colors.black38 : (anomaly ? dangerColor : normalColor);
+    final statusText = !ready ? '収集中...' : (anomaly ? 'DANGER' : 'NORMAL');
+    final statusColor = !ready ? Colors.white38 : (anomaly ? dangerColor : normalColor);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: ready ? fillColor.withOpacity(0.4) : const Color(0xFF1976D2).withOpacity(0.2),
+          color: ready ? fillColor.withOpacity(0.4) : const Color(0xFF58A6FF).withOpacity(0.2),
         ),
       ),
       child: Column(
@@ -2435,17 +2434,17 @@ class _MonitorPageState extends State<MonitorPage> {
               child: ready
                   ? _buildScoreGauge(score, fillColor)
                   : const Center(
-                      child: Text('Waiting for inference',
-                          style: TextStyle(color: Colors.black26, fontSize: 13))),
+                      child: Text('推論待機中',
+                          style: TextStyle(color: Colors.white24, fontSize: 13))),
             ),
           ),
           const SizedBox(height: 12),
           const Text('anomaly score',
-              style: TextStyle(color: Colors.black54, fontSize: 13)),
+              style: TextStyle(color: Color.fromARGB(140, 255, 255, 255), fontSize: 13)),
           const SizedBox(height: 2),
           Text(ready ? score.toStringAsFixed(4) : '-',
               style: const TextStyle(
-                  color: Colors.black87,
+                  color: Colors.white70,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFeatures: [FontFeature.tabularFigures()])),
@@ -2462,7 +2461,7 @@ class _MonitorPageState extends State<MonitorPage> {
       child: Center(
           child: Text('${(v * 100).toStringAsFixed(1)}%',
               style: const TextStyle(
-                  color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold))),
+                  color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
     );
   }
 
@@ -2471,19 +2470,19 @@ class _MonitorPageState extends State<MonitorPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: (conn ? Colors.green : Colors.red).withOpacity(0.4)),
+              color: (conn ? Colors.greenAccent : Colors.redAccent).withOpacity(0.4)),
         ),
         child: Row(children: [
           Icon(conn ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
-              size: 16, color: conn ? Colors.green : Colors.red),
+              size: 16, color: conn ? Colors.greenAccent : Colors.redAccent),
           const SizedBox(width: 6),
           Expanded(
               child: Text(
-            conn ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}' : '$name  Not Connected',
-            style: const TextStyle(fontSize: 11, color: Colors.black87),
+            conn ? '$name  seq:${seq ?? '-'} nf:${nf ?? '-'} bo:${bo ?? '-'}' : '$name  未接続',
+            style: const TextStyle(fontSize: 11, color: Colors.white70),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           )),
@@ -2497,9 +2496,8 @@ class _MonitorPageState extends State<MonitorPage> {
       clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2528,8 +2526,8 @@ class _MonitorPageState extends State<MonitorPage> {
                 LineChartData(
                   gridData: FlGridData(
                     show: true,
-                    getDrawingHorizontalLine: (_) => FlLine(color: Colors.black12, strokeWidth: 0.5),
-                    getDrawingVerticalLine: (_) => FlLine(color: Colors.black12, strokeWidth: 0.5),
+                    getDrawingHorizontalLine: (_) => FlLine(color: Colors.white10, strokeWidth: 0.5),
+                    getDrawingVerticalLine: (_) => FlLine(color: Colors.white10, strokeWidth: 0.5),
                   ),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
@@ -2544,7 +2542,7 @@ class _MonitorPageState extends State<MonitorPage> {
                           axisSide: meta.axisSide,
                           child: Text(
                             v.toStringAsFixed(1),
-                            style: const TextStyle(color: Colors.black45, fontSize: 9),
+                            style: const TextStyle(color: Colors.white38, fontSize: 9),
                           ),
                         ),
                       ),
@@ -2572,7 +2570,7 @@ class _MonitorPageState extends State<MonitorPage> {
                   lineTouchData: LineTouchData(
                     enabled: true,
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (_) => Colors.white,
+                      getTooltipColor: (_) => const Color(0xFF0D1117),
                       getTooltipItems: (spots) => spots.map((s) {
                         final ch = channels[s.barIndex];
                         return LineTooltipItem('${_chLabels[ch]}: ${s.y.toStringAsFixed(4)}',
@@ -2606,7 +2604,7 @@ class _GaugePainter extends CustomPainter {
         center,
         radius,
         Paint()
-          ..color = Colors.black12
+          ..color = Colors.white10
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth
           ..strokeCap = StrokeCap.round);
