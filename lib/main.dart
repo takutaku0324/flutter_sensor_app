@@ -1777,15 +1777,13 @@ class _MonitorPageState extends State<MonitorPage> {
     return sqrt(variance);
   }
 
-  void _updateMotionState(bool bothSidesValid) {
-    // Dev1,2 (ch0-5) のみを対象とする（元の挙動を維持）
+  void _updateMotionState() {
+    // Dev1・Dev2 の両方が接続されている場合のみ計測を進める
+    final bothConnected = (_latest?.conn0 ?? false) && (_latest?.conn1 ?? false);
+    if (!bothConnected) return;
+
     final targetBuffers = _stdBuffer.sublist(0, 6);
     if (targetBuffers.any((b) => b.length < _stdWindowSize)) return;
-
-    // 左右(Dev1・Dev2)のR/L/Bが同一サンプルで揃っていない場合は
-    // 経過時間としてカウントしない（片側だけ届いたサンプルを16msとして
-    // 二重・過剰計上しないため）
-    if (!bothSidesValid) return;
 
     final allStationary = targetBuffers.every((b) => _calcStd(b) <= _stdThreshold);
     if (allStationary) {
@@ -1970,20 +1968,13 @@ class _MonitorPageState extends State<MonitorPage> {
         _series[ch].add(FlSpot(_tick.toDouble(), _lastValue[ch]));
         if (_series[ch].length > maxPoints) _series[ch].removeAt(0);
       }
-      // 切断中／このサンプルにデータが無いチャンネルの stdBuffer には
-      // 古い値を再利用して積み増さない（誤った静止判定を防ぐ）
       for (int ch = 0; ch < 12; ch++) {
         if (!validThisSample[ch]) continue;
         _stdBuffer[ch].add(_lastValue[ch]);
         if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
       }
-      final dev1SetComplete =
-          validThisSample[0] && validThisSample[1] && validThisSample[2];
-      final dev2SetComplete =
-          validThisSample[3] && validThisSample[4] && validThisSample[5];
-      final bothSidesValid = dev1SetComplete && dev2SetComplete;
 
-      _updateMotionState(bothSidesValid);
+      _updateMotionState(); // ← 引数なし。conn0 && conn1 で内部判定
       _updateStepCounts(s, validThisSample);
       _tick++;
     }
