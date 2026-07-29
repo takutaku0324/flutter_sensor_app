@@ -1618,7 +1618,7 @@ class _MonitorPageState extends State<MonitorPage> {
     Color(0xFF4ECDC4), Color(0xFF45B7D1), Color(0xFFA88BFA),
   ];
 
-  int _stdWindowSize = 300;
+  int _stdWindowSize = 100;
   double _stdThreshold = 0.1;
   static const int _sampleIntervalMs = 16;
 
@@ -1768,30 +1768,45 @@ class _MonitorPageState extends State<MonitorPage> {
     });
   }
 
-  double _calcStd(List<double> data) {
-    final n = data.length;
-    if (n == 0) return 0.0;
-    final mean = data.reduce((a, b) => a + b) / n;
-    final variance =
-        data.fold(0.0, (sum, v) => sum + (v - mean) * (v - mean)) / n;
-    return sqrt(variance);
+  // フィールドに追加
+DateTime? _lastMotionUpdateTime;
+
+double _calcStd(List<double> data) {
+  final n = data.length;
+  if (n == 0) return 0.0;
+  final mean = data.reduce((a, b) => a + b) / n;
+  final variance =
+      data.fold(0.0, (sum, v) => sum + (v - mean) * (v - mean)) / n;
+  return sqrt(variance);
+}
+
+void _updateMotionState() {
+  final now = DateTime.now();
+  final bothConnected = (_latest?.conn0 ?? false) && (_latest?.conn1 ?? false);
+
+  if (!bothConnected) {
+    _lastMotionUpdateTime = null; // 次回接続時にリセット
+    return;
   }
 
-  void _updateMotionState() {
-    // Dev1・Dev2 の両方が接続されている場合のみ計測を進める
-    final bothConnected = (_latest?.conn0 ?? false) && (_latest?.conn1 ?? false);
-    if (!bothConnected) return;
+  final last = _lastMotionUpdateTime;
+  _lastMotionUpdateTime = now;
+  if (last == null) return; // 初回は経過時間を計算できない
 
-    final targetBuffers = _stdBuffer.sublist(0, 6);
-    if (targetBuffers.any((b) => b.length < _stdWindowSize)) return;
+  final elapsedMs = now.difference(last).inMilliseconds;
+  // 通信断・バックグラウンド化などで異常に大きい間隔になった場合は積算しない
+  if (elapsedMs <= 0 || elapsedMs > 2000) return;
 
-    final allStationary = targetBuffers.every((b) => _calcStd(b) <= _stdThreshold);
-    if (allStationary) {
-      _stationaryMs += _sampleIntervalMs;
-    } else {
-      _movementMs += _sampleIntervalMs;
-    }
+  final targetBuffers = _stdBuffer.sublist(0, 6);
+  if (targetBuffers.any((b) => b.length < _stdWindowSize)) return;
+
+  final allStationary = targetBuffers.every((b) => _calcStd(b) <= _stdThreshold);
+  if (allStationary) {
+    _stationaryMs += elapsedMs;
+  } else {
+    _movementMs += elapsedMs;
   }
+}
 
   void _updateAnomalyHistory(bool anomaly) {
     final now = DateTime.now();
@@ -1958,6 +1973,7 @@ class _MonitorPageState extends State<MonitorPage> {
     if (frame.bo3 != null) _dispBo3 = frame.bo3;
 
     if (frame.inferReady) _updateAnomalyHistory(frame.anomaly);
+
     for (int s = 0; s < sampleCount; s++) {
       final validThisSample = List<bool>.filled(12, false);
       for (int ch = 0; ch < 12; ch++) {
@@ -1974,10 +1990,16 @@ class _MonitorPageState extends State<MonitorPage> {
         if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
       }
 
-      _updateMotionState(); // ← 引数なし。conn0 && conn1 で内部判定
       _updateStepCounts(s, validThisSample);
       _tick++;
     }
+
+    // Dev1/Dev2 (ch0〜5) に新しいサンプルが1つでもあった場合のみ、
+    // フレーム単位で1回、壁時計ベースの経過時間を加算する
+    if (seq0Changed || seq1Changed) {
+      _updateMotionState();
+    }
+
     _pendingUiUpdate = true;
   }
 
