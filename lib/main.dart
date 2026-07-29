@@ -1777,10 +1777,16 @@ class _MonitorPageState extends State<MonitorPage> {
     return sqrt(variance);
   }
 
-  void _updateMotionState() {
+  void _updateMotionState(bool bothSidesValid) {
     // Dev1,2 (ch0-5) のみを対象とする（元の挙動を維持）
     final targetBuffers = _stdBuffer.sublist(0, 6);
     if (targetBuffers.any((b) => b.length < _stdWindowSize)) return;
+
+    // 左右(Dev1・Dev2)のR/L/Bが同一サンプルで揃っていない場合は
+    // 経過時間としてカウントしない（片側だけ届いたサンプルを16msとして
+    // 二重・過剰計上しないため）
+    if (!bothSidesValid) return;
+
     final allStationary = targetBuffers.every((b) => _calcStd(b) <= _stdThreshold);
     if (allStationary) {
       _stationaryMs += _sampleIntervalMs;
@@ -1919,12 +1925,19 @@ class _MonitorPageState extends State<MonitorPage> {
     _lastSeq2 = frame.seq2;
     _lastSeq3 = frame.seq3;
 
-    final rawArrays = <List<int>?>[
-      // conn0(=d0)には d0由来の rR/rL/rB を、conn1(=d1)には d1由来の lR/lL/lB を対応させる
-      frame.conn0 ? frame.rR : null, frame.conn0 ? frame.rL : null, frame.conn0 ? frame.rB : null,
-      frame.conn1 ? frame.lR : null, frame.conn1 ? frame.lL : null, frame.conn1 ? frame.lB : null,
-      frame.conn2 ? frame.d2R : null, frame.conn2 ? frame.d2L : null, frame.conn2 ? frame.d2B : null,
-      frame.conn3 ? frame.d3R : null, frame.conn3 ? frame.d3L : null, frame.conn3 ? frame.d3B : null,
+     final rawArrays = <List<int>?>[
+      (frame.conn0 && seq0Changed) ? frame.rR : null,
+      (frame.conn0 && seq0Changed) ? frame.rL : null,
+      (frame.conn0 && seq0Changed) ? frame.rB : null,
+      (frame.conn1 && seq1Changed) ? frame.lR : null,
+      (frame.conn1 && seq1Changed) ? frame.lL : null,
+      (frame.conn1 && seq1Changed) ? frame.lB : null,
+      (frame.conn2 && seq2Changed) ? frame.d2R : null,
+      (frame.conn2 && seq2Changed) ? frame.d2L : null,
+      (frame.conn2 && seq2Changed) ? frame.d2B : null,
+      (frame.conn3 && seq3Changed) ? frame.d3R : null,
+      (frame.conn3 && seq3Changed) ? frame.d3L : null,
+      (frame.conn3 && seq3Changed) ? frame.d3B : null,
     ];
 
     final sampleCount = rawArrays.whereType<List<int>>().fold(0, (mx, a) => max(mx, a.length));
@@ -1964,7 +1977,13 @@ class _MonitorPageState extends State<MonitorPage> {
         _stdBuffer[ch].add(_lastValue[ch]);
         if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
       }
-      _updateMotionState();
+      final dev1SetComplete =
+          validThisSample[0] && validThisSample[1] && validThisSample[2];
+      final dev2SetComplete =
+          validThisSample[3] && validThisSample[4] && validThisSample[5];
+      final bothSidesValid = dev1SetComplete && dev2SetComplete;
+
+      _updateMotionState(bothSidesValid);
       _updateStepCounts(s, validThisSample);
       _tick++;
     }
@@ -2212,14 +2231,14 @@ class _MonitorPageState extends State<MonitorPage> {
                                         MiniStatCard(
                                           icon: Icons.speed,
                                           label: 'ケイデンス 左',
-                                          value: _cadenceR != null ? '$_cadenceR spm' : '-',
+                                          value: _cadenceL != null ? '$_cadenceL spm' : '-',
                                           color: const Color(0xFFA88BFA),
                                         ),
                                         const SizedBox(width: 6),
                                         MiniStatCard(
                                           icon: Icons.speed,
                                           label: 'ケイデンス 右',
-                                          value: _cadenceL != null ? '$_cadenceL spm' : '-',
+                                          value: _cadenceR != null ? '$_cadenceR spm' : '-',
                                           color: const Color(0xFFA88BFA),
                                         ),
                                       ],
