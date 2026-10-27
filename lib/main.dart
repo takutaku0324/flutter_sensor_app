@@ -117,6 +117,43 @@ class IconViewPage extends StatelessWidget {
 }
 
 // ================================================================
+// 7クラス行動分類の定義 (ESP側 kClassNames と同じ並びにすること)
+//   0:walk 1:stand 2:sit 3:upstair 4:downstair 5:lie 6:fall
+// ================================================================
+const int kLieClass = 5;
+const int kFallClass = 6;
+const List<String> kClassKeys = [
+  'walk', 'stand', 'sit', 'upstair', 'downstair', 'lie', 'fall'
+];
+const List<String> kClassJa = [
+  '歩行', '立位', '座位', '階段上り', '階段下り', '臥位', '転倒'
+];
+const List<Color> kClassColors = [
+  Color(0xFF00C853), // walk
+  Color(0xFF45B7D1), // stand
+  Color(0xFF58A6FF), // sit
+  Color(0xFFFFD43B), // upstair
+  Color(0xFFFFA94D), // downstair
+  Color(0xFFA88BFA), // lie
+  Color(0xFFFF4444), // fall
+];
+
+// ── 表示用グループ (5区分) ──
+//   upstair+downstair → 階段昇降 / lie+fall → 転倒
+const List<int> kClassToGroup = [0, 1, 2, 3, 3, 4, 4];
+const int kGroupStairs = 3;
+const int kGroupFall = 4;
+const List<String> kGroupJa = ['歩行', '立位', '座位', '階段昇降', '転倒'];
+const List<String> kGroupEn = ['walk', 'stand', 'sit', 'stairs', 'lie+fall'];
+const List<Color> kGroupColors = [
+  Color(0xFF00C853), // 歩行
+  Color(0xFF45B7D1), // 立位
+  Color(0xFF58A6FF), // 座位
+  Color(0xFFFFD43B), // 階段昇降
+  Color(0xFFFF4444), // 転倒
+];
+
+// ================================================================
 // 異常セッションを記録するクラス
 // ================================================================
 class AnomalySession {
@@ -144,9 +181,13 @@ class SensorFrame {
   final int? seq2, seq3;
   final int? nf2, bo2, nf3, bo3;
   final bool inferReady;
-  final double score;
-  final bool anomaly;
+  final double score; // fall クラスの確率
+  final bool anomaly; // 予測クラスが fall か
   final String label;
+  // ── 7クラス分類結果 ──
+  final int predClass; // 0〜6 (-1: 未推論)
+  final double prob; // 予測クラスの確率
+  final List<double> probs; // 全7クラスの確率
 
   SensorFrame({
     required this.conn0,
@@ -181,7 +222,42 @@ class SensorFrame {
     required this.score,
     required this.anomaly,
     required this.label,
+    this.predClass = -1,
+    this.prob = 0.0,
+    this.probs = const [],
   });
+
+  /// 5区分にまとめた確率 (歩行/立位/座位/階段昇降/転倒)
+  List<double> get groupProbs {
+    final g = List<double>.filled(kGroupJa.length, 0.0);
+    for (int i = 0; i < probs.length && i < kClassToGroup.length; i++) {
+      g[kClassToGroup[i]] += probs[i];
+    }
+    return g;
+  }
+
+  /// 転倒スコア = lie(5) + fall(6) の確率の合計
+  double get fallGroupScore {
+    if (probs.length <= kFallClass) return score;
+    return (probs[kLieClass] + probs[kFallClass]).clamp(0.0, 1.0);
+  }
+
+  /// 5区分のうち最大確率のグループ (-1: 不明)
+  int get groupIndex {
+    if (probs.length < kClassToGroup.length) return -1;
+    final g = groupProbs;
+    int best = 0;
+    for (int i = 1; i < g.length; i++) {
+      if (g[i] > g[best]) best = i;
+    }
+    return best;
+  }
+
+  /// DANGER 判定: 最大確率のグループが「転倒」(lie+fall)
+  bool get isDanger {
+    final gi = groupIndex;
+    return gi < 0 ? anomaly : gi == kGroupFall;
+  }
 
   static int? _i(dynamic v) => v == null ? null : (v as num).toInt();
 
@@ -230,6 +306,11 @@ class SensorFrame {
       score: (infer['score'] ?? 0).toDouble(),
       anomaly: infer['anomaly'] == true,
       label: infer['label']?.toString() ?? '-',
+      predClass: _i(infer['class']) ?? -1,
+      prob: ((infer['prob'] ?? 0) as num).toDouble(),
+      probs: (infer['probs'] is List)
+          ? (infer['probs'] as List).map((e) => (e as num).toDouble()).toList()
+          : const [],
     );
   }
 }
@@ -933,7 +1014,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                         : const Color(0xFF00C853)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('異常履歴: ${sessions.length}回',
+                  child: Text('転倒履歴: ${sessions.length}回',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -988,7 +1069,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Center(
-                      child: Text('異常なし',
+                      child: Text('転倒なし',
                           style: TextStyle(color: Color(0xFF00C853), fontSize: 13))),
                 )
               else
@@ -1063,7 +1144,7 @@ class AnomalyHistoryWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('異常履歴',
+            Text('転倒履歴',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -1544,7 +1625,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _card(
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('異常検知時にアラーム音を再生',
+              title: const Text('転倒検知時にアラーム音を再生',
                   style: TextStyle(color: Colors.white70, fontSize: 13)),
               value: _alarmEnabled,
               activeColor: const Color(0xFF58A6FF),
@@ -1972,7 +2053,7 @@ void _updateMotionState() {
     if (frame.nf3 != null) _dispNf3 = frame.nf3;
     if (frame.bo3 != null) _dispBo3 = frame.bo3;
 
-    if (frame.inferReady) _updateAnomalyHistory(frame.anomaly);
+    if (frame.inferReady) _updateAnomalyHistory(frame.isDanger);
 
     for (int s = 0; s < sampleCount; s++) {
       final validThisSample = List<bool>.filled(12, false);
@@ -2433,54 +2514,162 @@ void _updateMotionState() {
 
   Widget _buildInferencePanel(SensorFrame? frame) {
     final ready = frame?.inferReady ?? false;
-    final score = frame?.score ?? 0.0;
-    final anomaly = frame?.anomaly ?? false;
+    final score = frame?.fallGroupScore ?? 0.0; // lie + fall
+    final danger = ready && (frame?.isDanger ?? false);
+    final gi = frame?.groupIndex ?? -1;
+    final gp = frame?.groupProbs ?? List<double>.filled(kGroupJa.length, 0.0);
+    final validGroup = ready && gi >= 0 && gi < kGroupJa.length;
+
     const dangerColor = Color(0xFFFF4444);
     const normalColor = Color(0xFF00C853);
-    final fillColor = anomaly ? dangerColor : normalColor;
-    final statusText = !ready ? '収集中...' : (anomaly ? 'DANGER' : 'NORMAL');
-    final statusColor = !ready ? Colors.white38 : (anomaly ? dangerColor : normalColor);
+    final fillColor = danger ? dangerColor : normalColor;
+    final statusText = !ready ? '収集中...' : (danger ? 'DANGER' : 'NORMAL');
+    final statusColor = !ready ? Colors.white38 : fillColor;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: ready ? fillColor.withOpacity(0.4) : const Color(0xFF58A6FF).withOpacity(0.2),
+          color: ready
+              ? fillColor.withOpacity(0.4)
+              : const Color(0xFF58A6FF).withOpacity(0.2),
         ),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(statusText,
-              style: TextStyle(
-                  color: statusColor,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 3)),
-          const SizedBox(height: 20),
+          // ══ 上半分: NORMAL/DANGER 円ゲージ (スコア = lie + fall) ══
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ready
-                  ? _buildScoreGauge(score, fillColor)
-                  : const Center(
-                      child: Text('推論待機中',
-                          style: TextStyle(color: Colors.white24, fontSize: 13))),
+            flex: 1,
+            child: Column(children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: ready
+                      ? CustomPaint(
+                          painter: _GaugePainter(
+                              value: score.clamp(0.0, 1.0),
+                              fillColor: fillColor),
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(statusText,
+                                      style: TextStyle(
+                                          color: statusColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 2)),
+                                  Text(
+                                      '${(score.clamp(0.0, 1.0) * 100).toStringAsFixed(1)}%',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(statusText,
+                              style: const TextStyle(
+                                  color: Colors.white38, fontSize: 14))),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                  ready
+                      ? '転倒スコア(lie+fall) ${score.toStringAsFixed(4)}'
+                      : '転倒スコア -',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white54, fontSize: 10)),
+            ]),
+          ),
+          const Divider(color: Colors.white10, height: 12),
+          // ══ 下半分: クラス表示 (階段=up+down / 転倒=lie+fall) ══
+          Expanded(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                      validGroup
+                          ? '${kGroupJa[gi]}  ${(gp[gi] * 100).toStringAsFixed(1)}%'
+                          : '-',
+                      maxLines: 1,
+                      style: TextStyle(
+                          color: validGroup ? kGroupColors[gi] : Colors.white38,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: ready
+                      ? Column(
+                          children: List.generate(kGroupJa.length, (i) {
+                            final p = gp[i].clamp(0.0, 1.0);
+                            final isTop = i == gi;
+                            final c = kGroupColors[i];
+                            return Expanded(
+                              child: Row(children: [
+                                SizedBox(
+                                  width: 50,
+                                  child: Text(kGroupJa[i],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: isTop ? c : Colors.white38,
+                                          fontWeight: isTop
+                                              ? FontWeight.bold
+                                              : FontWeight.normal)),
+                                ),
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: Stack(children: [
+                                      Container(
+                                          color: Colors.white.withOpacity(0.07)),
+                                      FractionallySizedBox(
+                                        widthFactor: p,
+                                        child: Container(
+                                            color: c.withOpacity(
+                                                isTop ? 0.95 : 0.45)),
+                                      ),
+                                    ]),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 40,
+                                  child: Text('${(p * 100).toStringAsFixed(1)}%',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: isTop ? c : Colors.white38,
+                                          fontFeatures: const [
+                                            FontFeature.tabularFigures()
+                                          ])),
+                                ),
+                              ]),
+                            );
+                          }),
+                        )
+                      : const Center(
+                          child: Text('推論待機中',
+                              style: TextStyle(
+                                  color: Colors.white24, fontSize: 12))),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          const Text('anomaly score',
-              style: TextStyle(color: Color.fromARGB(140, 255, 255, 255), fontSize: 13)),
-          const SizedBox(height: 2),
-          Text(ready ? score.toStringAsFixed(4) : '-',
-              style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFeatures: [FontFeature.tabularFigures()])),
-          const SizedBox(height: 12),
         ],
       ),
     );
