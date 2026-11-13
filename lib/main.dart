@@ -1,5 +1,7 @@
 // 非同期処理のライブラリ
 import 'dart:async';
+// 再生キュー (Queue)
+import 'dart:collection';
 // JSON変換のライブラリ
 import 'dart:convert';
 // 数学関数（min/maxなど）のライブラリ
@@ -20,6 +22,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/gestures.dart';
 
 import 'dart:ui';
+
+// スマホ通知 (nRF Dev1/2 の推論が異常のとき)
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 void main() {
   runApp(const EspMonitorApp());
@@ -117,34 +122,26 @@ class IconViewPage extends StatelessWidget {
 }
 
 // ================================================================
-// 7クラス行動分類の定義 (ESP側 kClassNames と同じ並びにすること)
-//   0:walk 1:stand 2:sit 3:upstair 4:downstair 5:lie 6:fall
+// 5クラス行動分類の定義 (M5 / ゲートウェイ側 kClassNames と同じ並びにすること)
+//   0:walk 1:stand 2:sit 3:stairs 4:danger
 // ================================================================
-const int kLieClass = 5;
-const int kFallClass = 6;
-const List<String> kClassKeys = [
-  'walk', 'stand', 'sit', 'upstair', 'downstair', 'lie', 'fall'
-];
-const List<String> kClassJa = [
-  '歩行', '立位', '座位', '階段上り', '階段下り', '臥位', '転倒'
-];
+const int kDangerClass = 4;
+const List<String> kClassKeys = ['walk', 'stand', 'sit', 'stairs', 'danger'];
+const List<String> kClassJa = ['歩行', '立位', '座位', '階段昇降', '転倒'];
 const List<Color> kClassColors = [
   Color(0xFF00C853), // walk
   Color(0xFF45B7D1), // stand
   Color(0xFF58A6FF), // sit
-  Color(0xFFFFD43B), // upstair
-  Color(0xFFFFA94D), // downstair
-  Color(0xFFA88BFA), // lie
-  Color(0xFFFF4444), // fall
+  Color(0xFFFFD43B), // stairs
+  Color(0xFFFF4444), // danger
 ];
 
-// ── 表示用グループ (5区分) ──
-//   upstair+downstair → 階段昇降 / lie+fall → 転倒
-const List<int> kClassToGroup = [0, 1, 2, 3, 3, 4, 4];
+// ── 表示用グループ (5クラスと1対1) ──
+const List<int> kClassToGroup = [0, 1, 2, 3, 4];
 const int kGroupStairs = 3;
 const int kGroupFall = 4;
 const List<String> kGroupJa = ['歩行', '立位', '座位', '階段昇降', '転倒'];
-const List<String> kGroupEn = ['walk', 'stand', 'sit', 'stairs', 'lie+fall'];
+const List<String> kGroupEn = ['walk', 'stand', 'sit', 'stairs', 'danger'];
 const List<Color> kGroupColors = [
   Color(0xFF00C853), // 歩行
   Color(0xFF45B7D1), // 立位
@@ -166,6 +163,88 @@ class AnomalySession {
 // ================================================================
 // SensorFrame
 // ================================================================
+// ── nRF UART Dev1/Dev2 (d0,d1) のスナップショット (設定画面の数値表示用) ──
+class NrfDevSnapshot {
+  final bool conn;
+  final int? seq, nf, bo;
+  final List<int> r, l, b;
+  const NrfDevSnapshot({
+    this.conn = false,
+    this.seq,
+    this.nf,
+    this.bo,
+    this.r = const [],
+    this.l = const [],
+    this.b = const [],
+  });
+  factory NrfDevSnapshot.fromJson(Map<String, dynamic> d) => NrfDevSnapshot(
+        conn: d['conn'] == true,
+        seq: SensorFrame._i(d['seq']),
+        nf: SensorFrame._i(d['nf']),
+        bo: SensorFrame._i(d['bo']),
+        r: SensorFrame._parseIntArray(d['R']),
+        l: SensorFrame._parseIntArray(d['L']),
+        b: SensorFrame._parseIntArray(d['B']),
+      );
+}
+
+// ── ゲートウェイ側推論 (nRF Dev1+Dev2) 結果 `nrf_infer` ──
+class NrfInferInfo {
+  final bool ready;
+  final String mode; // "anomaly" | "class" | "none"
+  final int count;
+  final int us;
+  final double score, thr;
+  final bool anomaly;
+  final int cls;
+  final double prob;
+  final String label;
+  final bool danger;
+  final List<double> probs;
+  const NrfInferInfo({
+    this.ready = false,
+    this.mode = 'none',
+    this.count = 0,
+    this.us = 0,
+    this.score = 0,
+    this.thr = 0,
+    this.anomaly = false,
+    this.cls = -1,
+    this.prob = 0,
+    this.label = '-',
+    this.danger = false,
+    this.probs = const [],
+  });
+
+  /// 異常判定 (anomaly モード: anomaly / class モード: danger クラス)
+  bool get abnormal {
+    if (!ready) return false;
+    if (mode == 'anomaly') return anomaly;
+    if (mode == 'class') return danger;
+    return false;
+  }
+
+  factory NrfInferInfo.fromJson(Map<String, dynamic> j) {
+    final cls = SensorFrame._i(j['class']) ?? -1;
+    return NrfInferInfo(
+      ready: j['ready'] == true,
+      mode: j['mode']?.toString() ?? 'none',
+      count: SensorFrame._i(j['count']) ?? 0,
+      us: SensorFrame._i(j['us']) ?? 0,
+      score: ((j['score'] ?? 0) as num).toDouble(),
+      thr: ((j['thr'] ?? 0) as num).toDouble(),
+      anomaly: j['anomaly'] == true,
+      cls: cls,
+      prob: ((j['prob'] ?? 0) as num).toDouble(),
+      label: j['label']?.toString() ?? '-',
+      danger: j['danger'] == true || cls == kDangerClass,
+      probs: (j['probs'] is List)
+          ? (j['probs'] as List).map((e) => (e as num).toDouble()).toList()
+          : const [],
+    );
+  }
+}
+
 class SensorFrame {
   final bool conn0;
   final bool conn1;
@@ -187,7 +266,11 @@ class SensorFrame {
   // ── 7クラス分類結果 ──
   final int predClass; // 0〜6 (-1: 未推論)
   final double prob; // 予測クラスの確率
-  final List<double> probs; // 全7クラスの確率
+  final List<double> probs; // 全5クラスの確率
+  // ── nRF UART Dev1/Dev2 (設定画面で数値のみ表示) + ゲートウェイ推論 ──
+  final NrfDevSnapshot nrf0;
+  final NrfDevSnapshot nrf1;
+  final NrfInferInfo nrfInfer;
 
   SensorFrame({
     required this.conn0,
@@ -225,9 +308,12 @@ class SensorFrame {
     this.predClass = -1,
     this.prob = 0.0,
     this.probs = const [],
+    this.nrf0 = const NrfDevSnapshot(),
+    this.nrf1 = const NrfDevSnapshot(),
+    this.nrfInfer = const NrfInferInfo(),
   });
 
-  /// 5区分にまとめた確率 (歩行/立位/座位/階段昇降/転倒)
+  /// 5クラスの確率 (歩行/立位/座位/階段昇降/転倒)
   List<double> get groupProbs {
     final g = List<double>.filled(kGroupJa.length, 0.0);
     for (int i = 0; i < probs.length && i < kClassToGroup.length; i++) {
@@ -236,10 +322,10 @@ class SensorFrame {
     return g;
   }
 
-  /// 転倒スコア = lie(5) + fall(6) の確率の合計
+  /// 転倒スコア = danger クラスの確率
   double get fallGroupScore {
-    if (probs.length <= kFallClass) return score;
-    return (probs[kLieClass] + probs[kFallClass]).clamp(0.0, 1.0);
+    if (probs.length <= kDangerClass) return score;
+    return probs[kDangerClass].clamp(0.0, 1.0);
   }
 
   /// 5区分のうち最大確率のグループ (-1: 不明)
@@ -253,7 +339,7 @@ class SensorFrame {
     return best;
   }
 
-  /// DANGER 判定: 最大確率のグループが「転倒」(lie+fall)
+  /// DANGER 判定: 最大確率のクラスが danger
   bool get isDanger {
     final gi = groupIndex;
     return gi < 0 ? anomaly : gi == kGroupFall;
@@ -268,8 +354,12 @@ class SensorFrame {
   }
 
   factory SensorFrame.fromJson(Map<String, dynamic> j) {
-    final d0 = (j['d0'] as Map<String, dynamic>?) ?? const {};
-    final d1 = (j['d1'] as Map<String, dynamic>?) ?? const {};
+    // ページ1 (M5): m0 / m1。nRF UART Dev1/2 は d0 / d1 (設定画面のみ)
+    final d0 = (j['m0'] as Map<String, dynamic>?) ?? const {};
+    final d1 = (j['m1'] as Map<String, dynamic>?) ?? const {};
+    final n0 = (j['d0'] as Map<String, dynamic>?) ?? const {};
+    final n1 = (j['d1'] as Map<String, dynamic>?) ?? const {};
+    final nInf = (j['nrf_infer'] as Map<String, dynamic>?) ?? const {};
     final d2 = (j['d2'] as Map<String, dynamic>?) ?? const {};
     final d3 = (j['d3'] as Map<String, dynamic>?) ?? const {};
     final infer = (j['infer'] as Map<String, dynamic>?) ?? const {};
@@ -302,6 +392,9 @@ class SensorFrame {
       bo2: _i(d2['bo']),
       nf3: _i(d3['nf']),
       bo3: _i(d3['bo']),
+      nrf0: NrfDevSnapshot.fromJson(n0),
+      nrf1: NrfDevSnapshot.fromJson(n1),
+      nrfInfer: NrfInferInfo.fromJson(nInf),
       inferReady: infer['ready'] == true,
       score: (infer['score'] ?? 0).toDouble(),
       anomaly: infer['anomaly'] == true,
@@ -493,7 +586,8 @@ class FootHeatmapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // 解像度を下げてパフォーマンスを確保 (ステップ4px)
-    const step = 4;
+    const step = 5;
+    final cellPaint = Paint()..style = PaintingStyle.fill;   // 毎セル生成せず使い回す
     final cols = (size.width / step).ceil();
     final rows = (size.height / step).ceil();
 
@@ -522,13 +616,11 @@ class FootHeatmapPainter extends CustomPainter {
         intensity = intensity.clamp(0.0, 1.0);
         if (intensity < 0.01) continue;
 
-        final paint = Paint()
-          ..color = _intensityColor(intensity, baseColor)
-          ..style = PaintingStyle.fill;
+        cellPaint.color = _intensityColor(intensity, baseColor);
         canvas.drawRect(
           Rect.fromLTWH(
               px - step / 2, py - step / 2, step.toDouble(), step.toDouble()),
-          paint,
+          cellPaint,
         );
       }
     }
@@ -1242,11 +1334,97 @@ class MiniStatCard extends StatelessWidget {
 // ================================================================
 // AppSettings
 // ================================================================
+// ================================================================
+// NrfLive: nRF Dev1/Dev2 の最新値 (設定画面の数値表示用)
+// ================================================================
+class NrfLive {
+  final List<bool> conn = [false, false];
+  final List<int?> seq = [null, null];
+  final List<int?> nf = [null, null];
+  final List<int?> bo = [null, null];
+  final List<int?> r = [null, null];
+  final List<int?> l = [null, null];
+  final List<int?> b = [null, null];
+  NrfInferInfo infer = const NrfInferInfo();
+  DateTime? lastRx;
+
+  void update(SensorFrame f) {
+    final devs = [f.nrf0, f.nrf1];
+    for (int i = 0; i < 2; i++) {
+      final d = devs[i];
+      conn[i] = d.conn;
+      if (d.seq != null) seq[i] = d.seq;
+      if (d.nf != null) nf[i] = d.nf;
+      if (d.bo != null) bo[i] = d.bo;
+      if (d.r.isNotEmpty) r[i] = d.r.last;
+      if (d.l.isNotEmpty) l[i] = d.l.last;
+      if (d.b.isNotEmpty) b[i] = d.b.last;
+    }
+    infer = f.nrfInfer;
+    lastRx = DateTime.now();
+  }
+}
+
+// ================================================================
+// NrfAlertNotifier: スマホ通知 (flutter_local_notifications)
+// ================================================================
+class NrfAlertNotifier {
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
+  bool _ready = false;
+
+  Future<void> init() async {
+    try {
+      const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const darwin = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+      await _plugin.initialize(
+        const InitializationSettings(android: android, iOS: darwin, macOS: darwin),
+      );
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+      _ready = true;
+    } catch (e) {
+      // Web / 未対応プラットフォームでは通知なしで継続
+      debugPrint('NrfAlertNotifier init error: $e');
+      _ready = false;
+    }
+  }
+
+  Future<void> show(String title, String body) async {
+    if (!_ready) return;
+    try {
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          'nrf_abnormal',
+          'nRF 異常検知',
+          channelDescription: 'nRF Dev1/Dev2 の推論異常通知',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(
+            presentAlert: true, presentSound: true, presentBadge: true),
+        macOS: DarwinNotificationDetails(
+            presentAlert: true, presentSound: true, presentBadge: true),
+      );
+      await _plugin.show(1001, title, body, details);
+    } catch (e) {
+      debugPrint('NrfAlertNotifier show error: $e');
+    }
+  }
+}
+
 class AppSettings {
   final String wsUrl;
   final double stdThreshold;
   final int stdWindowSize;
   final bool alarmEnabled;
+  final bool nrfNotifyEnabled;
   final bool? connectAction;
   final List<HeatmapPoint> heatmapPoints;
 
@@ -1256,6 +1434,7 @@ class AppSettings {
     required this.stdWindowSize,
     required this.alarmEnabled,
     required this.heatmapPoints,
+    this.nrfNotifyEnabled = true,
     this.connectAction,
   });
 }
@@ -1429,6 +1608,9 @@ class SettingsPage extends StatefulWidget {
   final bool initialAlarmEnabled;
   final bool isConnected;
   final List<HeatmapPoint> heatmapPoints;
+  final bool initialNrfNotifyEnabled;
+  final NrfLive nrfLive;
+  final Listenable nrfListenable;
 
   const SettingsPage({
     super.key,
@@ -1438,6 +1620,9 @@ class SettingsPage extends StatefulWidget {
     required this.initialAlarmEnabled,
     required this.isConnected,
     required this.heatmapPoints,
+    required this.initialNrfNotifyEnabled,
+    required this.nrfLive,
+    required this.nrfListenable,
   });
 
   @override
@@ -1449,6 +1634,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late double _threshold;
   late int _windowSize;
   late bool _alarmEnabled;
+  late bool _nrfNotify;
   late List<HeatmapPoint> _heatmapPoints;
 
   @override
@@ -1458,6 +1644,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _threshold = widget.initialThreshold;
     _windowSize = widget.initialWindowSize;
     _alarmEnabled = widget.initialAlarmEnabled;
+    _nrfNotify = widget.initialNrfNotifyEnabled;
     _heatmapPoints = widget.heatmapPoints.map((p) => p.copyWith()).toList();
   }
 
@@ -1473,6 +1660,7 @@ class _SettingsPageState extends State<SettingsPage> {
         stdWindowSize: _windowSize,
         alarmEnabled: _alarmEnabled,
         heatmapPoints: _heatmapPoints,
+        nrfNotifyEnabled: _nrfNotify,
         connectAction: connectAction,
       );
 
@@ -1499,6 +1687,115 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         child: child,
       );
+
+  Widget _kv(String k, String v, {Color? color}) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text(k, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+          Text(v,
+              style: TextStyle(
+                  color: color ?? Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: const [FontFeature.tabularFigures()])),
+        ]),
+      );
+
+  String _raw(int? v) => v == null ? '-' : '$v';
+  String _volt(int? v) =>
+      v == null ? '-' : '${(v / 8388607.0 * 3.3).toStringAsFixed(3)} V';
+
+  Widget _nrfDevCard(String name, int i, NrfLive d) {
+    final conn = d.conn[i];
+    return _card(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(conn ? Icons.circle : Icons.circle_outlined,
+              size: 10, color: conn ? Colors.greenAccent : Colors.redAccent),
+          const SizedBox(width: 6),
+          Text(name,
+              style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(width: 8),
+          Text(conn ? '接続中' : '未接続',
+              style: TextStyle(
+                  fontSize: 11,
+                  color: conn ? Colors.greenAccent : Colors.redAccent)),
+        ]),
+        const SizedBox(height: 6),
+        _kv('seq', _raw(d.seq[i])),
+        _kv('Notify Fail (nf)', _raw(d.nf[i])),
+        _kv('Buffer Overflow (bo)', _raw(d.bo[i])),
+        const Divider(color: Colors.white10, height: 12),
+        _kv('R (raw)', _raw(d.r[i])),
+        _kv('R (電圧)', _volt(d.r[i])),
+        _kv('L (raw)', _raw(d.l[i])),
+        _kv('L (電圧)', _volt(d.l[i])),
+        _kv('B (raw)', _raw(d.b[i])),
+        _kv('B (電圧)', _volt(d.b[i])),
+      ]),
+    );
+  }
+
+  Widget _nrfInferCard(NrfLive d) {
+    final inf = d.infer;
+    final abn = inf.abnormal;
+    final c = !inf.ready
+        ? Colors.white38
+        : (abn ? const Color(0xFFFF4444) : const Color(0xFF00C853));
+    String status;
+    if (!inf.ready) {
+      status = '推論待機中';
+    } else {
+      status = abn ? '異常' : '正常';
+    }
+    return _card(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(abn ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+              size: 16, color: c),
+          const SizedBox(width: 6),
+          Text('Dev1+Dev2 推論: $status',
+              style: TextStyle(
+                  color: c, fontSize: 13, fontWeight: FontWeight.bold)),
+        ]),
+        const SizedBox(height: 6),
+        _kv('モード', inf.mode),
+        _kv('ラベル', inf.label),
+        if (inf.mode == 'anomaly') ...[
+          _kv('スコア', inf.score.toStringAsFixed(4)),
+          _kv('しきい値', inf.thr.toStringAsFixed(4)),
+        ],
+        if (inf.mode == 'class') ...[
+          _kv('確信度', '${(inf.prob * 100).toStringAsFixed(1)} %'),
+          if (inf.probs.length == kClassJa.length)
+            for (int k = 0; k < kClassJa.length; k++)
+              _kv(kClassJa[k], '${(inf.probs[k] * 100).toStringAsFixed(1)} %',
+                  color: k == inf.cls ? kClassColors[k] : Colors.white54),
+        ],
+        _kv('推論回数', '${inf.count}'),
+        _kv('推論時間', '${inf.us} us'),
+      ]),
+    );
+  }
+
+  Widget _nrfSection() {
+    return AnimatedBuilder(
+      animation: widget.nrfListenable,
+      builder: (_, __) {
+        final d = widget.nrfLive;
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _nrfDevCard('nRF UART Dev1', 0, d),
+          const SizedBox(height: 8),
+          _nrfDevCard('nRF UART Dev2', 1, d),
+          const SizedBox(height: 8),
+          _nrfInferCard(d),
+        ]);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1632,6 +1929,19 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (v) => setState(() => _alarmEnabled = v),
             ),
           ),
+          _sectionTitle('nRF UART Dev1 / Dev2 (数値確認・異常通知)'),
+          _card(
+            child: SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Dev1+Dev2 の推論が異常のときスマホ通知',
+                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+              value: _nrfNotify,
+              activeColor: const Color(0xFF58A6FF),
+              onChanged: (v) => setState(() => _nrfNotify = v),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _nrfSection(),
           _sectionTitle('ヒートマップ'),
           _card(
             child: ListTile(
@@ -1756,6 +2066,26 @@ class _MonitorPageState extends State<MonitorPage> {
   DateTime? _lastAnomalyTime;
 
   final AlarmSoundController _alarm = AlarmSoundController();
+
+  // ── 再生(プレイアウト)バッファ ───────────────────────────────
+  // 1パケット(16サンプル=256ms分)がまとめて届くため、そのまま描画するとグラフ・ヒートマップが
+  // 256msごとにカクつく。受信サンプルをグループ別のキューに溜め、62.5Hz(16ms)で1サンプルずつ消費する。
+  //   グループ: 0=M5 Dev1(ch0-2) 1=M5 Dev2(ch3-5) 2=nRF Dev3(ch6-8) 3=nRF Dev4(ch9-11)
+  static const int _playPrime = 16;    // この数たまってから再生開始 (約256ms遅延で揺らぎを吸収)
+  static const int _playCatchup = 48;  // これ以上溜まったら1サンプル余分に進めて遅延を詰める
+  static const int _playMax = 96;      // 上限 (超えたら古いものを捨てる)
+  final List<Queue<List<double>>> _playQ = List.generate(4, (_) => Queue<List<double>>());
+  final List<bool> _playPrimed = List.filled(4, false);
+  Timer? _playTimer;
+  int _playLastMs = 0;
+
+  // ── nRF UART Dev1/Dev2 (設定画面で数値確認) + 異常通知 ──
+  final NrfLive _nrfLive = NrfLive();
+  final ValueNotifier<int> _nrfTick = ValueNotifier<int>(0);
+  final NrfAlertNotifier _notifier = NrfAlertNotifier();
+  bool _nrfNotifyEnabled = true;
+  DateTime? _lastNrfNotify;
+  static const int _nrfNotifyIntervalSec = 30; // 異常継続中の再通知間隔
   bool _alarmPlaying = false;
   bool _alarmEnabled = true;
 
@@ -1841,7 +2171,10 @@ class _MonitorPageState extends State<MonitorPage> {
   void initState() {
     super.initState();
     _alarm.init();
-    _uiThrottleTimer = Timer.periodic(const Duration(milliseconds: 25), (_) {
+    _notifier.init();
+    _playLastMs = DateTime.now().millisecondsSinceEpoch;
+    _playTimer = Timer.periodic(const Duration(milliseconds: 8), (_) => _playoutTick());
+    _uiThrottleTimer = Timer.periodic(const Duration(milliseconds: 80), (_) {   // 画面更新は約12Hz(サンプル消費は16msごとのまま)
       if (_pendingUiUpdate && mounted) {
         _pendingUiUpdate = false;
         setState(() {});
@@ -1947,6 +2280,13 @@ void _updateMotionState() {
     _lastStepTickR = null;
     _lastStepTickL = null;
 
+    for (final q in _playQ) {
+      q.clear();
+    }
+    for (int g = 0; g < 4; g++) {
+      _playPrimed[g] = false;
+    }
+
     _dataReceivedSinceConnect = false;
 
     try {
@@ -2008,7 +2348,78 @@ void _updateMotionState() {
     });
   }
 
+  // 16ms(62.5Hz)ごとに各グループから1サンプルずつ取り出して反映する
+  void _playoutTick() {
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    int due = (nowMs - _playLastMs) ~/ 16;
+    if (due <= 0) return;
+    if (due > 4) {            // バックグラウンド復帰などで大きく遅れたら追いかけず仕切り直す
+      due = 1;
+      _playLastMs = nowMs;
+    } else {
+      _playLastMs += due * 16;
+    }
+    for (int k = 0; k < due; k++) {
+      _playOneSample();
+    }
+  }
+
+  void _playOneSample() {
+    final valid = List<bool>.filled(12, false);
+    bool any = false;
+    for (int g = 0; g < 4; g++) {
+      final q = _playQ[g];
+      if (!_playPrimed[g]) {
+        if (q.length >= _playPrime) {
+          _playPrimed[g] = true;
+        } else {
+          continue;
+        }
+      }
+      if (q.isEmpty) {        // 枯渇したら再度ためてから再生 (途切れ防止)
+        _playPrimed[g] = false;
+        continue;
+      }
+      if (q.length > _playCatchup) q.removeFirst();   // 溜まりすぎ → 遅延を詰める
+      final v = q.removeFirst();
+      for (int c = 0; c < 3; c++) {
+        final ch = g * 3 + c;
+        _lastValue[ch] = v[c];
+        valid[ch] = true;
+        _series[ch].add(FlSpot(_tick.toDouble(), v[c]));
+        if (_series[ch].length > maxPoints) _series[ch].removeAt(0);
+        _stdBuffer[ch].add(v[c]);
+        if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
+      }
+      any = true;
+    }
+    if (!any) return;
+    _updateStepCounts(0, valid);
+    _tick++;
+    _pendingUiUpdate = true;
+  }
+
+  void _handleNrf(SensorFrame frame) {
+    _nrfLive.update(frame);
+    _nrfTick.value++;
+    if (!_nrfNotifyEnabled) return;
+    if (!frame.nrfInfer.abnormal) return;
+    final now = DateTime.now();
+    final last = _lastNrfNotify;
+    if (last != null && now.difference(last).inSeconds < _nrfNotifyIntervalSec) {
+      return;
+    }
+    _lastNrfNotify = now;
+    final inf = frame.nrfInfer;
+    final detail = inf.mode == 'class'
+        ? '${inf.label} (${(inf.prob * 100).toStringAsFixed(1)}%)'
+        : 'ANOMALY (score ${inf.score.toStringAsFixed(3)})';
+    _notifier.show('nRF Dev1/Dev2 異常検知', detail);
+  }
+
   void _pushFrame(SensorFrame frame) {
+    // nRF Dev1/2 は新しいサンプルの有無に関わらず常に最新値と推論結果を反映
+    _handleNrf(frame);
     final seq0Changed = frame.seq0 != null && frame.seq0 != _lastSeq0;
     final seq1Changed = frame.seq1 != null && frame.seq1 != _lastSeq1;
     final seq2Changed = frame.seq2 != null && frame.seq2 != _lastSeq2;
@@ -2055,24 +2466,19 @@ void _updateMotionState() {
 
     if (frame.inferReady) _updateAnomalyHistory(frame.isDanger);
 
-    for (int s = 0; s < sampleCount; s++) {
-      final validThisSample = List<bool>.filled(12, false);
-      for (int ch = 0; ch < 12; ch++) {
-        final arr = rawArrays[ch];
-        if (arr == null || s >= arr.length) continue;
-        _lastValue[ch] = arr[s] / _adcFullScale;
-        validThisSample[ch] = true;
-        _series[ch].add(FlSpot(_tick.toDouble(), _lastValue[ch]));
-        if (_series[ch].length > maxPoints) _series[ch].removeAt(0);
+    // 受信サンプルを再生キューへ積む (描画・統計は _playoutTick が16msごとに1サンプルずつ消費)
+    for (int g = 0; g < 4; g++) {
+      final ra = rawArrays[g * 3];
+      final rb = rawArrays[g * 3 + 1];
+      final rc = rawArrays[g * 3 + 2];
+      if (ra == null || rb == null || rc == null) continue;
+      final n = min(ra.length, min(rb.length, rc.length));
+      for (int i = 0; i < n; i++) {
+        _playQ[g].add([ra[i] / _adcFullScale, rb[i] / _adcFullScale, rc[i] / _adcFullScale]);
       }
-      for (int ch = 0; ch < 12; ch++) {
-        if (!validThisSample[ch]) continue;
-        _stdBuffer[ch].add(_lastValue[ch]);
-        if (_stdBuffer[ch].length > _stdWindowSize) _stdBuffer[ch].removeAt(0);
+      while (_playQ[g].length > _playMax) {
+        _playQ[g].removeFirst();
       }
-
-      _updateStepCounts(s, validThisSample);
-      _tick++;
     }
 
     // Dev1/Dev2 (ch0〜5) に新しいサンプルが1つでもあった場合のみ、
@@ -2126,6 +2532,9 @@ void _updateMotionState() {
           initialThreshold: _stdThreshold,
           initialWindowSize: _stdWindowSize,
           initialAlarmEnabled: _alarmEnabled,
+          initialNrfNotifyEnabled: _nrfNotifyEnabled,
+          nrfLive: _nrfLive,
+          nrfListenable: _nrfTick,
           isConnected: _connected,
           heatmapPoints: _heatmapPoints,
         ),
@@ -2140,6 +2549,7 @@ void _updateMotionState() {
       for (final b in _stdBuffer) b.clear();
       _alarmEnabled = result.alarmEnabled;
       _heatmapPoints = result.heatmapPoints;
+      _nrfNotifyEnabled = result.nrfNotifyEnabled;
       if (!_alarmEnabled && _alarmPlaying) {
         _alarmPlaying = false;
         _alarm.stopAlarm();
@@ -2161,6 +2571,8 @@ void _updateMotionState() {
     _channel?.sink.close();
     _urlController.dispose();
     _alarm.dispose();
+    _playTimer?.cancel();
+    _nrfTick.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -2247,15 +2659,15 @@ void _updateMotionState() {
                 controller: _pageController,
                 onPageChanged: (i) => setState(() => _currentPage = i),
                 children: [
-                  // ══════════════ ページ1: Dev1,2 (既存の表示) ══════════════
+                  // ══════════════ ページ1: M5 Dev1,2 (m0,m1 + M5推論) ══════════════
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(children: [
                       // デバイス接続状態チップ (ちらつき防止: _disp* 変数を使用)
                       Row(children: [
-                        _deviceChip('Dev1 (左足)', frame?.conn0 ?? false, _dispSeq0, _dispNf0, _dispBo0),
+                        _deviceChip('M5 Dev1 (左足)', frame?.conn0 ?? false, _dispSeq0, _dispNf0, _dispBo0),
                         const SizedBox(width: 8),
-                        _deviceChip('Dev2 (右足)', frame?.conn1 ?? false, _dispSeq1, _dispNf1, _dispBo1),
+                        _deviceChip('M5 Dev2 (右足)', frame?.conn1 ?? false, _dispSeq1, _dispNf1, _dispBo1),
                       ]),
                       const SizedBox(height: 12),
                       Expanded(
@@ -2274,11 +2686,11 @@ void _updateMotionState() {
                                     children: [
                                       Expanded(
                                           child: NfBoStatusWidget(
-                                              label: 'Dev1 左足', nf: _dispNf0, bo: _dispBo0)),
+                                              label: 'M5 Dev1 左足', nf: _dispNf0, bo: _dispBo0)),
                                       const SizedBox(width: 6),
                                       Expanded(
                                           child: NfBoStatusWidget(
-                                              label: 'Dev2 右足', nf: _dispNf1, bo: _dispBo1)),
+                                              label: 'M5 Dev2 右足', nf: _dispNf1, bo: _dispBo1)),
                                       const SizedBox(width: 6),
                                       Expanded(
                                           child: AnomalyHistoryWidget(
@@ -2416,7 +2828,7 @@ void _updateMotionState() {
                       ),
                     ]),
                   ),
-                  // ══════════════ ページ2: Dev3,4 (グラフ + 圧力分布のみ) ══════════════
+                  // ══════════════ ページ2: nRF UART Dev3,4 (d2,d3: グラフ + 圧力分布) ══════════════
                   _buildDev34Page(frame),
                 ],
               ),
@@ -2433,9 +2845,9 @@ void _updateMotionState() {
       padding: const EdgeInsets.all(16),
       child: Column(children: [
         Row(children: [
-          _deviceChip('Dev3', frame?.conn2 ?? false, _dispSeq2, _dispNf2, _dispBo2),
+          _deviceChip('nRF Dev3', frame?.conn2 ?? false, _dispSeq2, _dispNf2, _dispBo2),
           const SizedBox(width: 8),
-          _deviceChip('Dev4', frame?.conn3 ?? false, _dispSeq3, _dispNf3, _dispBo3),
+          _deviceChip('nRF Dev4', frame?.conn3 ?? false, _dispSeq3, _dispNf3, _dispBo3),
         ]),
         const SizedBox(height: 12),
         Expanded(
@@ -2540,7 +2952,7 @@ void _updateMotionState() {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ══ 上半分: NORMAL/DANGER 円ゲージ (スコア = lie + fall) ══
+          // ══ 上半分: NORMAL/DANGER 円ゲージ (スコア = danger 確率) ══
           Expanded(
             flex: 1,
             child: Column(children: [
@@ -2584,7 +2996,7 @@ void _updateMotionState() {
               const SizedBox(height: 2),
               Text(
                   ready
-                      ? '転倒スコア(lie+fall) ${score.toStringAsFixed(4)}'
+                      ? '転倒スコア(danger) ${score.toStringAsFixed(4)}'
                       : '転倒スコア -',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -2592,7 +3004,7 @@ void _updateMotionState() {
             ]),
           ),
           const Divider(color: Colors.white10, height: 12),
-          // ══ 下半分: クラス表示 (階段=up+down / 転倒=lie+fall) ══
+          // ══ 下半分: クラス表示 (5クラス) ══
           Expanded(
             flex: 1,
             child: Column(
@@ -2780,7 +3192,13 @@ void _updateMotionState() {
                   borderData: FlBorderData(show: false),
                   lineBarsData: channels
                       .map((ch) => LineChartBarData(
-                            spots: _series[ch].isEmpty ? [const FlSpot(0, 0)] : _series[ch].map((p) => FlSpot(p.x, p.y*3.3)).toList(),
+                            spots: _series[ch].isEmpty
+                                ? [const FlSpot(0, 0)]
+                                : [
+                                    // 描画点は1つおきに間引いて軽量化 (見た目はほぼ同じ)
+                                    for (int i = 0; i < _series[ch].length; i += 2)
+                                      FlSpot(_series[ch][i].x, _series[ch][i].y * 3.3)
+                                  ],
                             color: _chColors[ch],
                             isCurved: false,
                             barWidth: 1.2,
