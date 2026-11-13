@@ -2071,7 +2071,7 @@ class _MonitorPageState extends State<MonitorPage> {
   // 1パケット(16サンプル=256ms分)がまとめて届くため、そのまま描画するとグラフ・ヒートマップが
   // 256msごとにカクつく。受信サンプルをグループ別のキューに溜め、62.5Hz(16ms)で1サンプルずつ消費する。
   //   グループ: 0=M5 Dev1(ch0-2) 1=M5 Dev2(ch3-5) 2=nRF Dev3(ch6-8) 3=nRF Dev4(ch9-11)
-  static const int _playPrime = 16;    // この数たまってから再生開始 (約256ms遅延で揺らぎを吸収)
+  static const int _playPrime = 8;    // この数たまってから再生開始 (約256ms遅延で揺らぎを吸収)
   static const int _playCatchup = 48;  // これ以上溜まったら1サンプル余分に進めて遅延を詰める
   static const int _playMax = 96;      // 上限 (超えたら古いものを捨てる)
   final List<Queue<List<double>>> _playQ = List.generate(4, (_) => Queue<List<double>>());
