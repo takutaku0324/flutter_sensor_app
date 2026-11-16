@@ -3124,6 +3124,20 @@ void _updateMotionState() {
     );
   }
 
+  // 間引きは配列の番号ではなく絶対tick(x)で決める。
+  // 先頭を捨ててずらしても同じサンプルが選ばれ続けるので、線が揺れない。
+  List<FlSpot> _decimate(List<FlSpot> src) {
+    final out = <FlSpot>[];
+    for (final s in src) {
+      if (s.x.toInt() % 2 == 0) out.add(FlSpot(s.x, s.y * 3.3));
+    }
+    final last = src.last;
+    if (last.x.toInt() % 2 != 0) {
+      out.add(FlSpot(last.x, last.y * 3.3)); // 右端は常に最新まで描く
+    }
+    return out;
+  }
+
   Widget _buildCombinedChart({List<int> channels = const [0, 1, 2, 3, 4, 5]}) {
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -3194,11 +3208,7 @@ void _updateMotionState() {
                       .map((ch) => LineChartBarData(
                             spots: _series[ch].isEmpty
                                 ? [const FlSpot(0, 0)]
-                                : [
-                                    // 描画点は1つおきに間引いて軽量化 (見た目はほぼ同じ)
-                                    for (int i = 0; i < _series[ch].length; i += 2)
-                                      FlSpot(_series[ch][i].x, _series[ch][i].y * 3.3)
-                                  ],
+                                : _decimate(_series[ch]),
                             color: _chColors[ch],
                             isCurved: false,
                             barWidth: 1.2,
