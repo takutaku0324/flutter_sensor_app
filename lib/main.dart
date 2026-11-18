@@ -2023,6 +2023,13 @@ class _MonitorPageState extends State<MonitorPage> {
   int _reconnectAttempts = 0;
   static const int _maxReconnectDelayMs = 10000;
   bool _dataReceivedSinceConnect = false;
+  // ── 一瞬の切断で表示を「未接続」にしない(猶予) / 無通信ウォッチドッグ ──
+  bool _inGrace = false;            // 自動再接続中で、まだ表示は「接続中」のまま
+  Timer? _graceTimer;
+  Timer? _watchdogTimer;
+  DateTime _lastMsgAt = DateTime.now();
+  static const int _graceMs = 4000;       // この時間つながらなければ初めて「再接続中」と表示
+  static const int _silenceLimitMs = 5000; // この時間データが来なければ切って再接続
 
   Timer? _uiThrottleTimer;
   bool _pendingUiUpdate = false;
@@ -2172,6 +2179,13 @@ class _MonitorPageState extends State<MonitorPage> {
     super.initState();
     _alarm.init();
     _notifier.init();
+    _watchdogTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_channel != null &&
+          !_manualDisconnect &&
+          DateTime.now().difference(_lastMsgAt).inMilliseconds > _silenceLimitMs) {
+        _handleDisconnect('無通信');
+      }
+    });
     _playLastMs = DateTime.now().millisecondsSinceEpoch;
     _playTimer = Timer.periodic(const Duration(milliseconds: 8), (_) => _playoutTick());
     _uiThrottleTimer = Timer.periodic(const Duration(milliseconds: 80), (_) {   // 画面更新は約12Hz(サンプル消費は16msごとのまま)
@@ -2288,23 +2302,32 @@ void _updateMotionState() {
     }
 
     _dataReceivedSinceConnect = false;
+    _lastMsgAt = DateTime.now();
 
     try {
       final channel = WebSocketChannel.connect(Uri.parse(url));
       _channel = channel;
-      setState(() {
-        _connected = true;
-        _status = '接続試行中...';
-      });
+      if (!_inGrace) {
+        setState(() {
+          _connected = true;
+          _status = '接続試行中...';
+        });
+      }
 
       _wsSub = channel.stream.listen(
         (msg) {
+          _lastMsgAt = DateTime.now();
           if (!_dataReceivedSinceConnect) {
             _dataReceivedSinceConnect = true;
             // 実際にデータを受信できた時点で再接続バックオフをリセットする
             _reconnectAttempts = 0;
+            _inGrace = false;
+            _graceTimer?.cancel();
             if (mounted) {
-              setState(() => _status = '接続中');
+              setState(() {
+                _connected = true;
+                _status = '接続中';
+              });
             } else {
               _status = '接続中';
             }
@@ -2328,22 +2351,49 @@ void _updateMotionState() {
 
   void _handleDisconnect(String status) {
     if (!mounted) return;
-    setState(() {
-      _status = status;
-      _connected = false;
-    });
+    final wasLive = _dataReceivedSinceConnect;
     _wsSub?.cancel();
     _wsSub = null;
+    try {
+      _channel?.sink.close();
+    } catch (_) {}
     _channel = null;
 
-    if (_manualDisconnect) return;
+    if (_manualDisconnect) {
+      setState(() {
+        _status = status;
+        _connected = false;
+      });
+      return;
+    }
 
-    final delayMs = min(1000 * (1 << min(_reconnectAttempts, 4)), _maxReconnectDelayMs);
+    // 受信できていた接続が切れた場合は、すぐ再接続しつつ表示は変えない(猶予)。
+    // 猶予内に復帰すれば「未接続/接続試行中」のちらつきが出ない。
+    if (wasLive && !_inGrace) {
+      _inGrace = true;
+      _graceTimer?.cancel();
+      _graceTimer = Timer(const Duration(milliseconds: _graceMs), () {
+        if (!mounted || !_inGrace) return;
+        setState(() {
+          _connected = false;
+          _status = '再接続中... (${_reconnectAttempts}回目)';
+        });
+      });
+    } else if (!_inGrace) {
+      setState(() {
+        _status = status;
+        _connected = false;
+      });
+    }
+
+    final delayMs = _inGrace
+        ? min(300 * (1 << min(_reconnectAttempts, 3)), 2400)   // 猶予中は素早く再試行
+        : min(1000 * (1 << min(_reconnectAttempts, 4)), _maxReconnectDelayMs);
     _reconnectAttempts++;
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(Duration(milliseconds: delayMs), () {
       if (!mounted || _manualDisconnect) return;
-      setState(() => _status = '再接続中... (${_reconnectAttempts}回目)');
+      if (!_inGrace) setState(() => _status = '再接続中... (${_reconnectAttempts}回目)');
       _connect();
     });
   }
@@ -2493,6 +2543,8 @@ void _updateMotionState() {
   void _disconnect() {
     _manualDisconnect = true;
     _reconnectAttempts = 0;
+    _inGrace = false;
+    _graceTimer?.cancel();
     _reconnectTimer?.cancel();
     _wsSub?.cancel();
     _wsSub = null;
@@ -2566,6 +2618,8 @@ void _updateMotionState() {
   @override
   void dispose() {
     _uiThrottleTimer?.cancel();
+    _watchdogTimer?.cancel();
+    _graceTimer?.cancel();
     _reconnectTimer?.cancel();
     _wsSub?.cancel();
     _channel?.sink.close();
