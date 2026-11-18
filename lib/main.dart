@@ -2028,7 +2028,7 @@ class _MonitorPageState extends State<MonitorPage> {
   Timer? _graceTimer;
   Timer? _watchdogTimer;
   DateTime _lastMsgAt = DateTime.now();
-  static const int _graceMs = 4000;       // この時間つながらなければ初めて「再接続中」と表示
+  static const int _graceMs = 2000;       // この時間つながらなければ初めて「再接続中」と表示
   static const int _silenceLimitMs = 10000; // この時間データが来なければ切って再接続
 
   Timer? _uiThrottleTimer;
