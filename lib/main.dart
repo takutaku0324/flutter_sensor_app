@@ -2023,6 +2023,7 @@ class _MonitorPageState extends State<MonitorPage> {
   int _reconnectAttempts = 0;
   static const int _maxReconnectDelayMs = 10000;
   bool _dataReceivedSinceConnect = false;
+  final Map<String, dynamic> _cachedKeys = {};   // infer / nrf_infer / gw の前回値
   // ── 一瞬の切断で表示を「未接続」にしない(猶予) / 無通信ウォッチドッグ ──
   bool _inGrace = false;            // 自動再接続中で、まだ表示は「接続中」のまま
   Timer? _graceTimer;
@@ -2337,6 +2338,14 @@ void _updateMotionState() {
             raw = jsonDecode(msg as String) as Map<String, dynamic>;
           } catch (_) {
             return;
+          }
+          // ESP32 は推論結果(infer / nrf_infer)を 250ms ごとにしか付けない。無いフレームでは前回値を使う。
+          for (final k in const ['infer', 'nrf_infer', 'gw']) {
+            if (raw[k] != null) {
+              _cachedKeys[k] = raw[k];
+            } else if (_cachedKeys[k] != null) {
+              raw[k] = _cachedKeys[k];
+            }
           }
           _pushFrame(SensorFrame.fromJson(raw));
         },
