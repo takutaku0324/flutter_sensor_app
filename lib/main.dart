@@ -586,7 +586,7 @@ class FootHeatmapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // 解像度を下げてパフォーマンスを確保 (ステップ4px)
-    const step = 5;
+    const step = 10;
     final cellPaint = Paint()..style = PaintingStyle.fill;   // 毎セル生成せず使い回す
     final cols = (size.width / step).ceil();
     final rows = (size.height / step).ceil();
